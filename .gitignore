@@ -1,0 +1,55 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Django
+*.log
+db.sqlite3
+*.pot
+*.py[cod]
+*.sqlite3
+*.pyo
+venv/
+env/
+
+# Vue.js
+node_modules/
+dist/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Virtual Environment
+.env
+.venv
+venv/
+ENV/
+env.bak/
+*.env
+
+# VS Code settings
+.vscode/
+
+# JetBrains IDEs (PyCharm, WebStorm, etc.)
+.idea/
+*.iml
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+
+# Coverage reports
+.coverage
+*.cover
+*.coverage.*
+
+# Other
+*.swp
+*~
+*.sublime-workspace
+*.sublime-project
+
