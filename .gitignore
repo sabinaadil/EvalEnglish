@@ -1,0 +1,48 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.sqlite3
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Django
+db.sqlite3
+*.log
+media/
+staticfiles/
+**/migrations/*  # Исключаем файлы миграций
+!**/migrations/__init__.py  # Но оставляем файл __init__.py для работы Django
+
+# Node.js (Vue.js)
+node_modules/
+dist/
+*.log
+*.env
+
+# JetBrains IDE (PyCharm, WebStorm и т. д.)
+.idea/
+*.iml
+out/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Лог файлы
+*.log
+
+# Env-файлы
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
