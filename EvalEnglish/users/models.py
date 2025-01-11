@@ -30,18 +30,24 @@ class UserManager(BaseUserManager):
         return self.get(email=email)
 
 class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = (
+        ('student', 'Student'),
+        ('teacher', 'Teacher'),
+        ('admin', 'Admin'),
+    )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=255, blank=True, default='')
+    first_name = models.CharField(max_length=255, blank=True, default='')
+    last_name = models.CharField(max_length=255, blank=True, default='')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    is_teacher = models.BooleanField(default=False)
     avatar = models.ImageField(upload_to='avatars', blank=True, null=True)
-    # friends = models.ManyToManyField('self', blank=True)
-    # friends_count = models.IntegerField(default=0)
+    date_joined = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(null=True, blank=True)
-    # Добавишь сюда поля
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'

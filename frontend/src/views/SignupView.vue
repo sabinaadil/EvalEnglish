@@ -9,7 +9,8 @@ const router = useRouter();
 
 const form = reactive({
   email: '',
-  name: '',
+  firstName: '',
+  lastName: '',
   password1: '',
   password2: '',
 });
@@ -19,8 +20,12 @@ const errors = ref([]);
 const submitForm = () => {
   errors.value = [];
 
-  if (form.name === '') {
+  if (form.firstName === '') {
     errors.value.push('Вы пропустили имя!');
+  }
+
+  if (form.lastName === '') {
+    errors.value.push('Вы пропустили фамилию!');
   }
 
   if (form.email === '') {
@@ -42,7 +47,8 @@ const submitForm = () => {
         if (response.data.message === 'success') {
           toastStore.showToast(3000, 'Аккаунт был создан. Теперь вам необходимо активировать аккаунт!', 'bg-emerald-500');
           form.email = '';
-          form.name = '';
+          form.firstName = '';
+          form.lastName = '';
           form.password1 = '';
           form.password2 = '';
           router.push('/login');
@@ -96,7 +102,12 @@ const submitForm = () => {
         <form class="space-y-6" v-on:submit.prevent="submitForm">
           <div>
             <label>Атыңыз</label><br>
-            <input type="text" v-model="form.name" placeholder="Атыңызды енгізіңіз"
+            <input type="text" v-model="form.firstName" placeholder="Атыңызды енгізіңіз"
+              class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
+          </div>
+          <div>
+            <label>Тегіңіз</label><br>
+            <input type="text" v-model="form.lastName" placeholder="Тегіңізді енгізіңіз"
               class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
           </div>
           <div>

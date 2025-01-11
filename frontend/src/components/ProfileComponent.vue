@@ -18,7 +18,7 @@
                     </div>
                     <h2
                         class="mt-4 text-2xl font-bold text-blue-600 group-hover:underline transition-colors duration-300">
-                        {{ user.name || 'Без имени' }}
+                        {{ (user.firstName + ' ' + user.lastName) || 'Без имени' }}
                     </h2>
                 </RouterLink>
                 <p class="text-gray-500 mt-1 text-sm">{{ user.email || 'Нет email' }}</p>
