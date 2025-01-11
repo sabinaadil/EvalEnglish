@@ -35,9 +35,8 @@ def sign_up(request):
     if form.is_valid():
         user = form.save(commit=False)
         user.is_active = False
+        print(f"First name: {user.first_name}, Last name: {user.last_name}")  # Отладочный вывод
         user.save()
-
-        form.save()
 
         user_id = str(user.id).replace('-', '')
 

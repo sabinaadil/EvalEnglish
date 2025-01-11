@@ -82,8 +82,8 @@ export const useUserStore = defineStore({
       this.user.avatar = user.avatar;
 
       localStorage.setItem("user.id", user.id);
-      localStorage.setItem("user.firstName", user.firstName);
-      localStorage.setItem("user.lastName", user.lastName);
+      localStorage.setItem("user.firstName", user.first_name);
+      localStorage.setItem("user.lastName", user.last_name);
       localStorage.setItem("user.email", user.email);
       localStorage.setItem("user.avatar", user.avatar);
 

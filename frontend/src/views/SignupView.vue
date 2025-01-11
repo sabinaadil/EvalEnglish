@@ -9,8 +9,8 @@ const router = useRouter();
 
 const form = reactive({
   email: '',
-  firstName: '',
-  lastName: '',
+  first_name: '',
+  last_name: '',
   password1: '',
   password2: '',
 });
@@ -20,11 +20,11 @@ const errors = ref([]);
 const submitForm = () => {
   errors.value = [];
 
-  if (form.firstName === '') {
+  if (form.first_name === '') {
     errors.value.push('Вы пропустили имя!');
   }
 
-  if (form.lastName === '') {
+  if (form.last_name === '') {
     errors.value.push('Вы пропустили фамилию!');
   }
 
@@ -47,8 +47,8 @@ const submitForm = () => {
         if (response.data.message === 'success') {
           toastStore.showToast(3000, 'Аккаунт был создан. Теперь вам необходимо активировать аккаунт!', 'bg-emerald-500');
           form.email = '';
-          form.firstName = '';
-          form.lastName = '';
+          form.first_name = '';
+          form.last_name = '';
           form.password1 = '';
           form.password2 = '';
           router.push('/login');
@@ -66,8 +66,12 @@ const submitForm = () => {
         }
       })
       .catch(error => {
-        console.error('An error occurred:', error);
-        errors.value.push('Произошла ошибка при регистрации!');
+        if (error.response) {
+          console.error('Server Response:', error.response.data);
+          errors.value.push('Ошибка сервера: ' + error.response.data.message);
+        } else {
+          errors.value.push('Произошла ошибка при регистрации!');
+        }
         toastStore.showToast(5000, 'Произошла ошибка при регистрации!', 'bg-red-500');
       });
   }
@@ -102,12 +106,12 @@ const submitForm = () => {
         <form class="space-y-6" v-on:submit.prevent="submitForm">
           <div>
             <label>Атыңыз</label><br>
-            <input type="text" v-model="form.firstName" placeholder="Атыңызды енгізіңіз"
+            <input type="text" v-model="form.first_name" placeholder="Атыңызды енгізіңіз"
               class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
           </div>
           <div>
             <label>Тегіңіз</label><br>
-            <input type="text" v-model="form.lastName" placeholder="Тегіңізді енгізіңіз"
+            <input type="text" v-model="form.last_name" placeholder="Тегіңізді енгізіңіз"
               class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
           </div>
           <div>
