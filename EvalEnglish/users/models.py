@@ -3,7 +3,9 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from django.utils import timezone
+from common.models import Document
 import uuid
+import os
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -44,7 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_teacher = models.BooleanField(default=False)
     avatar = models.ImageField(upload_to='avatars', blank=True, null=True)
     date_joined = models.DateTimeField(default=timezone.now)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     last_login = models.DateTimeField(null=True, blank=True)
@@ -63,3 +65,37 @@ class User(AbstractBaseUser, PermissionsMixin):
             return settings.WEBSITE_URL + self.avatar.url
         else:
             return f'{settings.WEBSITE_URL}/media/avatars/default_avatar.jpeg'
+
+class TeacherApplication(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='applications'
+    )
+    document = models.ManyToManyField(
+        Document,
+        related_name='teacher_application_documents',
+        blank=True
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    submitted_at = models.DateTimeField(default=timezone.now)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Teacher Application"
+        verbose_name_plural = "Teacher Applications"
+        ordering = ['-submitted_at']
+
+    def __str__(self):
+        return f"Application by {self.user.email} - {self.get_status_display()}"

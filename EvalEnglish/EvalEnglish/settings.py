@@ -72,10 +72,13 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # my apps
+    'core',
     'users',
     'courses',
     'assessments',
     'analytics',
+    'notifications',
+    'common',
 ]
 
 MIDDLEWARE = [

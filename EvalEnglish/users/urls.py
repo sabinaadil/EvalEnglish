@@ -9,5 +9,4 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('editprofile/', api.edit_profile, name='editprofile'),
     path('editpassword/', api.edit_password, name='editpassword'),
-
 ]
