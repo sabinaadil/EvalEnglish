@@ -1,75 +1,223 @@
 <template>
-    <div
-        class="h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-200 via-white to-gray-100 p-6">
-        <div class="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full space-y-6">
-            <div class="flex flex-col items-center mb-4">
-                <RouterLink :to="{ name: 'profile', params: { id: user.id } }" class="flex flex-col items-center group">
-                    <div class="relative">
-                        <img :src="user.avatar || '/default-avatar.png'" alt="Аватар пользователя"
-                            class="w-28 h-28 rounded-full object-cover border-4 border-blue-500 group-hover:shadow-lg transition-shadow duration-300" />
-                        <div v-if="userStore.user.id === user.id"
-                            class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4 bg-blue-600 text-white p-1 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-4 h-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.862 4.487l1.688-1.688a1.5 1.5 0 1 1 2.122 2.122L7.122 18.471a4.5 4.5 0 0 1-1.897 1.13l-2.686.8.8-2.686a4.5 4.5 0 0 1 1.13-1.897L16.862 4.487z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <h2
-                        class="mt-4 text-2xl font-bold text-blue-600 group-hover:underline transition-colors duration-300">
-                        {{ (user.firstName + ' ' + user.lastName) || 'Без имени' }}
-                    </h2>
-                </RouterLink>
-                <p class="text-gray-500 mt-1 text-sm">{{ user.email || 'Нет email' }}</p>
+    <div class="max-w-md mx-auto bg-white p-8 mt-10 shadow rounded-lg space-y-6">
+        <h1 class="text-2xl font-bold text-center">Сіздің профиліңіз</h1>
+        <div v-if="error" class="bg-red-100 text-red-700 p-4 rounded mb-4">
+            {{ error }}
+        </div>
+        <div v-if="message" class="bg-green-100 text-green-700 p-4 rounded mb-4">
+            {{ message }}
+        </div>
+        <div v-if="user" class="space-y-2">
+            <div class="flex items-center justify-center">
+                <img :src="user.avatar" alt="Avatar"
+                    class="w-24 h-24 object-cover rounded-full border border-gray-300" />
             </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <button @click="logout"
-                    class="w-full px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center space-x-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+            <p class="text-center">
+                <strong>ТАӘ:</strong> {{ user.first_name }} {{ user.last_name }}
+            </p>
+            <p class="text-center">
+                <strong>Пошта:</strong> {{ user.email }}
+            </p>
+            <p v-if="user.is_superuser" class="text-center">
+                <strong>Рөл: </strong>
+                <span class="capitalize">Әкімші</span>
+            </p>
+            <p v-else class="text-center">
+                <strong>Рөл: </strong>
+                <span class="capitalize">{{ translatedRole }}</span>
+            </p>
+            <RouterLink :to="{ name: 'teacher-application' }">
+                <div v-if="!user.is_superuser && user.role !== 'student'"
+                    class="flex items-center justify-center mt-4 p-4 bg-white border border-gray-200 rounded-lg shadow-md hover:bg-blue-50 transition duration-300 cursor-pointer">
+                    <strong class="text-gray-800 mr-2">Оқытушы мәртебесі:</strong>
+                    <span :class="statusClass">
+                        {{ translatedStatus }}
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-blue-600" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
+                </div>
+            </RouterLink>
+        </div>
 
-                    <span>Шығу</span>
+        <div class="text-center">
+            <button @click="toggleEditForm"
+                class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition-colors">
+                {{ isEditFormVisible ? 'Форманы жасыру' : 'Профиль деректерін өзгерту' }}
+            </button>
+        </div>
+
+        <transition name="fade">
+            <form v-if="isEditFormVisible" @submit.prevent="submitForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Аты</label>
+                    <input type="text" v-model="form.first_name" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
+                        placeholder="Атыңызды енгізіңіз" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Тегі</label>
+                    <input type="text" v-model="form.last_name" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
+                        placeholder="Тегіңізді енгізіңіз" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Пошта</label>
+                    <input type="email" v-model="form.email" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
+                        placeholder="Поштаңызды енгізіңіз" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Аватар</label>
+                    <input type="file" @change="handleFileChange" accept="image/*" class="mt-1 block w-full text-sm text-gray-500
+                           file:mr-4 file:py-2 file:px-4
+                           file:rounded-md file:border-0
+                           file:text-sm file:font-semibold
+                           file:bg-blue-50 file:text-blue-700
+                           hover:file:bg-blue-100" />
+                </div>
+
+                <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    Профильді жаңарту
                 </button>
-            </div>
+            </form>
+        </transition>
+
+        <div class="text-center">
+            <button @click="logout"
+                class="px-4 py-2 bg-red-600 text-white rounded-md shadow hover:bg-red-700 transition-colors">
+                Шығу
+            </button>
         </div>
     </div>
 </template>
 
-<script>
-import { useUserStore } from '../stores/user'
+<script setup>
+import { computed, ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
-import { onMounted, ref, computed } from 'vue'
+import { useUserStore } from '../stores/user'
 import { useRouter } from 'vue-router'
 
-export default {
-    name: 'ProfileComponent',
-    setup() {
-        const userStore = useUserStore()
-        const router = useRouter()
+const userStore = useUserStore()
+const router = useRouter()
 
-        const user = userStore.user
+const user = ref(null)
+const error = ref('')
+const message = ref('')
 
-        const logout = () => {
-            userStore.removeToken()
-            router.push({ name: 'login' })
-        }
+const isEditFormVisible = ref(false)
 
-        const goToPreferencesSurvey = () => {
-            router.push({ name: 'PreferencesSurvey' })
-        }
+const form = reactive({
+    first_name: '',
+    last_name: '',
+    email: '',
+    avatar: null,
+})
 
-        return {
-            user,
-            logout,
-            userStore
-        }
+const statusClass = computed(() => {
+    return user.value.is_teacher ? 'text-green-600 font-semibold' : 'text-gray-600 font-semibold'
+})
+
+const roleMap = {
+    'student': 'Студент',
+    'teacher': 'Оқытушы',
+    'admin': 'Әкімші',
+}
+
+const statusMap = {
+    'pending': 'Күтілуде',
+    'approved': 'Расталды',
+    'rejected': 'Қабылданбады',
+}
+
+const translatedRole = computed(() => {
+    return roleMap[user.value?.role] || user.value?.role
+})
+
+const translatedStatus = computed(() => {
+    return statusMap[user.value?.status] || (user.value?.is_teacher ? 'Расталды' : 'Расталған жоқ')
+})
+
+function getUserInfo() {
+    axios.get('/api/me/')
+        .then(res => {
+            user.value = res.data
+            form.first_name = user.value.first_name
+            form.last_name = user.value.last_name
+            form.email = user.value.email
+        })
+        .catch(err => {
+            error.value = err.response?.data?.detail || 'Ошибка при получении информации'
+        })
+}
+
+function handleFileChange(event) {
+    const file = event.target.files[0]
+    if (file) {
+        form.avatar = file
     }
 }
+function logout() {
+    userStore.logout()
+    router.push({ name: 'login' })
+}
+
+function submitForm() {
+    error.value = ''
+    message.value = ''
+
+    const fd = new FormData()
+    fd.append('first_name', form.first_name)
+    fd.append('last_name', form.last_name)
+    fd.append('email', form.email)
+
+    if (form.avatar) {
+        fd.append('avatar', form.avatar)
+    }
+
+    axios.post('/api/editprofile/', fd, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+        .then(res => {
+            message.value = 'Профиль сәтті жаңартылды!'
+
+            user.value = res.data.user
+
+            userStore.setUserInfo(res.data.user)
+
+            form.avatar = null
+            isEditFormVisible.value = false
+        })
+        .catch(err => {
+            error.value = err.response?.data?.message || 'Ошибка при обновлении профиля'
+        })
+}
+
+function toggleEditForm() {
+    isEditFormVisible.value = !isEditFormVisible.value
+}
+
+onMounted(() => {
+    getUserInfo()
+})
 </script>
 
-<style scoped></style>
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: all 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+</style>

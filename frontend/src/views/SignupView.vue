@@ -1,5 +1,117 @@
+<template>
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-green-100 p-4">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+      <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Тіркелу</h2>
+
+      <transition name="fade">
+        <div v-if="errors.length > 0" class="bg-red-100 text-red-700 p-4 rounded mb-4">
+          <ul>
+            <li v-for="error in errors" :key="error" class="text-sm">{{ error }}</li>
+          </ul>
+        </div>
+      </transition>
+
+      <form @submit.prevent="submitForm" class="space-y-6">
+        <div class="relative">
+          <label for="first_name" class="block text-sm font-medium text-gray-700">Атыңыз</label>
+          <input type="text" id="first_name" v-model="form.first_name" placeholder="Атыңызды енгізіңіз"
+            class="mt-1 block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200" />
+          <div class="absolute inset-y-0 left-0 pl-3 top-6 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5 text-gray-400">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+
+          </div>
+        </div>
+
+        <div class="relative">
+          <label for="last_name" class="block text-sm font-medium text-gray-700">Тегіңіз</label>
+          <input type="text" id="last_name" v-model="form.last_name" placeholder="Тегіңізді енгізіңіз"
+            class="mt-1 block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200" />
+          <div class="absolute inset-y-0 left-0 pl-3 top-6 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5 text-gray-400">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+
+          </div>
+        </div>
+
+        <div class="relative">
+          <label for="email" class="block text-sm font-medium text-gray-700">Пошта</label>
+          <input type="email" id="email" v-model="form.email" placeholder="Поштаңызды енгізіңіз"
+            class="mt-1 block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200" />
+          <div class="absolute inset-y-0 left-0 pl-3 top-6 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5 text-gray-400">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="relative">
+          <label for="password1" class="block text-sm font-medium text-gray-700">Құпиясөз</label>
+          <input type="password" id="password1" v-model="form.password1" placeholder="Құпиясөзді енгізіңіз"
+            class="mt-1 block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200" />
+          <div class="absolute inset-y-0 left-0 pl-3 top-6 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5 text-gray-400">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+            </svg>
+
+          </div>
+        </div>
+        <div class="relative">
+          <label for="password2" class="block text-sm font-medium text-gray-700">Құпиясөзді қайталаңыз</label>
+          <input type="password" id="password2" v-model="form.password2" placeholder="Құпиясөзді растаңыз"
+            class="mt-1 block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200" />
+          <div class="absolute inset-y-0 left-0 pl-3 top-6 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5 text-gray-400">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+
+          </div>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="is_teacher_applicant" v-model="form.is_teacher_applicant"
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+          <label for="is_teacher_applicant" class="ml-2 block text-sm text-gray-700">
+            Мен Оқытушымын
+          </label>
+        </div>
+        <div>
+          <button type="submit"
+            class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 animate-pulse" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Тіркелу
+          </button>
+        </div>
+      </form>
+
+      <div class="text-center mt-6">
+        <p class="text-sm text-gray-600">
+          Аккаунт бар ма?
+          <RouterLink to="/login" class="text-blue-500 hover:underline font-medium transition duration-200">
+            Мында басыңыз!
+          </RouterLink>
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useToastStore } from '../stores/toast';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -13,138 +125,108 @@ const form = reactive({
   last_name: '',
   password1: '',
   password2: '',
+  is_teacher_applicant: false,
 });
 
 const errors = ref([]);
 
-const submitForm = () => {
+const isValidEmail = computed(() => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(form.email);
+});
+
+const submitForm = async () => {
   errors.value = [];
 
-  if (form.first_name === '') {
-    errors.value.push('Вы пропустили имя!');
+  if (form.first_name.trim() === '') {
+    errors.value.push('Атыңызды еңгізу қажет!');
   }
 
-  if (form.last_name === '') {
-    errors.value.push('Вы пропустили фамилию!');
+  if (form.last_name.trim() === '') {
+    errors.value.push('Тегіңізді еңгізу қажет!');
   }
 
-  if (form.email === '') {
-    errors.value.push('Вы пропустили email!');
+  if (form.email.trim() === '') {
+    errors.value.push('Поштаңызды еңгізу қажет!');
+  } else if (!isValidEmail.value) {
+    errors.value.push('Дұрыс поштаны еңгізу қажет!');
   }
 
   if (form.password1 === '') {
-    errors.value.push('Вы пропустили пароль!');
+    errors.value.push('Құпиясөзді еңгізу қажет!');
   }
 
   if (form.password1 !== form.password2) {
-    errors.value.push('Пароли не совпадают!');
+    errors.value.push('Құпиясөздер сәйкес келмеді!');
   }
 
   if (errors.value.length === 0) {
-    axios
-      .post('/api/signup/', form)
-      .then(response => {
-        if (response.data.message === 'success') {
-          toastStore.showToast(3000, 'Аккаунт был создан. Теперь вам необходимо активировать аккаунт!', 'bg-emerald-500');
-          form.email = '';
-          form.first_name = '';
-          form.last_name = '';
-          form.password1 = '';
-          form.password2 = '';
-          router.push('/login');
+    const payload = {
+      email: form.email,
+      first_name: form.first_name,
+      last_name: form.last_name,
+      password1: form.password1,
+      password2: form.password2,
+      is_teacher_applicant: form.is_teacher_applicant,
+    };
 
-          errors.value = [];
-        } else {
-          errors.value = [];
-          for (let field in response.data.message) {
-            const fieldErrors = response.data.message[field];
-            fieldErrors.forEach(msg => {
-              errors.value.push(msg);
-            });
-          }
-          toastStore.showToast(5000, 'Что-то пошло не так, попробуйте ещё раз!', 'bg-red-500');
+    try {
+      const response = await axios.post('/api/signup/', payload);
+
+      if (response.data.message === 'success') {
+        toastStore.showToast(3000, 'Аккаунт был создан. Проверьте почту для активации аккаунта.', 'bg-emerald-500');
+        form.email = '';
+        form.first_name = '';
+        form.last_name = '';
+        form.password1 = '';
+        form.password2 = '';
+        form.is_teacher_applicant = false;
+        errors.value = [];
+        router.push('/login');
+      } else {
+        errors.value = [];
+        for (let field in response.data.message) {
+          const fieldErrors = response.data.message[field];
+          fieldErrors.forEach(msg => {
+            errors.value.push(msg);
+          });
         }
-      })
-      .catch(error => {
-        if (error.response) {
-          console.error('Server Response:', error.response.data);
-          errors.value.push('Ошибка сервера: ' + error.response.data.message);
-        } else {
-          errors.value.push('Произошла ошибка при регистрации!');
-        }
-        toastStore.showToast(5000, 'Произошла ошибка при регистрации!', 'bg-red-500');
-      });
+        toastStore.showToast(5000, 'Өкінішке орай бірдеңе дүрыс орындалмай қалды, кешірім сұраймыз!', 'bg-red-500');
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error('Server Response:', error.response.data);
+        errors.value.push('Ошибка сервера: ' + (error.response.data.message || 'Попробуйте позже.'));
+      } else {
+        errors.value.push('Тіркелу кезінде қате орын алды!');
+      }
+      toastStore.showToast(5000, 'Тіркелу кезінде қате орын алды!', 'bg-red-500');
+    }
   }
 };
-
 </script>
 
-<template>
-  <div class="max-w-screen-2xl mx-auto grid grid-cols-5 gap-4 text-sm text-black mt-10">
-    <div class="main-left col-span-3 ml-4">
-      <div class="p-12 bg-white shadow-lg rounded-lg">
-        <h1 class="mb-6 text-2xl">EvalEnglish</h1>
-        <div>
-          <label class="font-medium">test</label><br>
-          <div class="relative mt-2">
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
 
-            <div class="flex flex-wrap mb-2">
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
-            </div>
-          </div>
-        </div>
-        <br>
-        <p class="font-bold mb-4">
-          Аккаунт бар ма? <RouterLink :to="{ 'name': 'login' }"
-            class="text-blue-600 hover:text-blue-800 transition duration-300 ease">
-            Мында басыңыз!</RouterLink>
-        </p>
-      </div>
-    </div>
-    <div class="main-center col-span-2 space-y-4 mr-4">
-      <div class="p-12 bg-white shadow-lg rounded-lg">
-        <form class="space-y-6" v-on:submit.prevent="submitForm">
-          <div>
-            <label>Атыңыз</label><br>
-            <input type="text" v-model="form.first_name" placeholder="Атыңызды енгізіңіз"
-              class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
-          </div>
-          <div>
-            <label>Тегіңіз</label><br>
-            <input type="text" v-model="form.last_name" placeholder="Тегіңізді енгізіңіз"
-              class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
-          </div>
-          <div>
-            <label>Пошта</label><br>
-            <input type="email" v-model="form.email" placeholder="Поштаңызды енгізіңіз"
-              class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
-          </div>
-          <div>
-            <label>Құпиясөз</label><br>
-            <input type="password" v-model="form.password1" placeholder="Құпиясөзді енгізіңіз"
-              class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
-          </div>
-          <div>
-            <label>Құпиясөзді қайталаңыз</label><br>
-            <input type="password" v-model="form.password2" placeholder="Құпиясөзді растаңыз"
-              class="w-full mt-2 py-4 px-6 border border-gray-400 rounded-lg bg-gray-100 text-black placeholder-gray-500">
-          </div>
+.transition {
+  transition: all 0.3s ease;
+}
 
-          <template v-if="errors.length > 0">
-            <div class="bg-red-500 p-4 rounded-lg text-white">
-              <p v-for="error in errors" :key="error">{{ error }}</p>
-            </div>
-          </template>
-          <div>
-            <button
-              class="font-bold w-full py-4 px-6 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease">Тіркелу</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
+input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
 
-
-
-<style scoped></style>
+button:hover svg {
+  transform: translateX(2px);
+}
+</style>

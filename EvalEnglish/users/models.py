@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 from common.models import Document
 import uuid
-import os
+from django.contrib.contenttypes.fields import GenericRelation
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -35,7 +35,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
         ('student', 'Student'),
         ('teacher', 'Teacher'),
-        ('admin', 'Admin'),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -74,28 +73,24 @@ class TeacherApplication(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(
-        'User',
+    user = models.OneToOneField(
+        User,
         on_delete=models.CASCADE,
-        related_name='applications'
+        related_name='teacher_application'
     )
-    document = models.ManyToManyField(
-        Document,
-        related_name='teacher_application_documents',
-        blank=True
-    )
+    full_name = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=30, blank=True, null=True)
+
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
         default='pending'
     )
-    submitted_at = models.DateTimeField(default=timezone.now)
+    submitted_at = models.DateTimeField(null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        verbose_name = "Teacher Application"
-        verbose_name_plural = "Teacher Applications"
-        ordering = ['-submitted_at']
+    rejection_reason = models.TextField(null=True, blank=True)  # Новое поле
+    
+    documents = GenericRelation('common.Document', related_query_name='teacher_application')
 
     def __str__(self):
-        return f"Application by {self.user.email} - {self.get_status_display()}"
+        return f"TeacherApplication({self.user.email}) - {self.status}"
