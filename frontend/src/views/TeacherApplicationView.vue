@@ -30,15 +30,34 @@
             </div>
             <div class="mb-6">
                 <span class="font-semibold text-gray-700">Құжаттар:</span>
-                <ul class="list-disc list-inside">
-                    <li v-for="doc in application.documents" :key="doc.id"
-                        class="overflow-hidden text-ellipsis whitespace-nowrap w-64">
-                        <a :href="doc.file" target="_blank" class="text-blue-600 hover:underline">
-                            {{ getFileName(doc.file) }}
-                        </a>
-                    </li>
-                </ul>
+                <div class="space-y-2 mt-2">
+                    <div v-for="doc in application.documents" :key="doc.id"
+                        class="flex items-center justify-between bg-gray-50 border border-gray-300 rounded-md p-2 shadow-sm">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 mr-3" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 3v5h5M10 12h4m-4 4h4" />
+                            </svg>
+                            <a :href="doc.file" target="_blank"
+                                class="text-sm text-gray-700 truncate w-52 hover:underline">
+                                {{ getFileName(doc.file) }}
+                            </a>
+                        </div>
+                        <button type="button" class="text-green-600 hover:text-green-800 focus:outline-none">
+                            <a :href="doc.file" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg></a>
+
+                        </button>
+                    </div>
+                </div>
             </div>
+
             <div class="text-center">
                 <RouterLink to="/"
                     class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition-colors">
@@ -102,13 +121,40 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Құжат</label>
-                    <input type="file" ref="fileInput" required accept=".pdf,.jpg,.jpeg,.png" class="mt-1 block w-full text-sm text-gray-500
+                    <input type="file" ref="fileInput" multiple required accept=".pdf,.jpg,.jpeg,.png"
+                        @change="handleFileChange" class="mt-1 block w-full text-sm text-gray-500
                            file:mr-4 file:py-2 file:px-4
                            file:rounded-md file:border-0
                            file:text-sm file:font-semibold
                            file:bg-blue-50 file:text-blue-700
                            hover:file:bg-blue-100" />
                 </div>
+                <div v-if="files.length" class="mt-4">
+                    <p class="text-sm font-medium text-gray-700 mb-2">Таңдалған құжаттар:</p>
+                    <div class="space-y-2">
+                        <div v-for="(file, index) in files" :key="index"
+                            class="flex items-center justify-between bg-gray-50 border border-gray-300 rounded-md p-2 shadow-sm">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 mr-3" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 3v5h5M10 12h4m-4 4h4" />
+                                </svg>
+                                <span class="text-sm text-gray-700 truncate w-52">{{ file.name }}</span>
+                            </div>
+                            <button type="button" @click="removeFile(index)"
+                                class="text-red-600 hover:text-red-800 focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
 
                 <button type="submit"
                     class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
@@ -126,17 +172,23 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useUserStore } from '../stores/user'
 import axios from 'axios'
 import { RouterLink } from 'vue-router'
 
+
+const userStore = useUserStore()
 const application = ref(null)
 const form = reactive({
     full_name: '',
     phone: '',
+    documents: [],
 })
+
 const error = ref('')
 const message = ref('')
 const fileInput = ref(null)
+const files = ref([]);
 
 const isModalOpen = ref(false)
 
@@ -148,56 +200,80 @@ const closeModal = () => {
     isModalOpen.value = false
 }
 
+const removeFile = (index) => {
+    files.value.splice(index, 1);
+};
+
 const getApplication = () => {
-    error.value = ''
-    message.value = ''
+    if (userStore.user.role !== 'teacher') {
+        message.value = 'Тек оқытушылар өтінім жіберуге құқылы.';
+        return;
+    }
+    error.value = '';
+    message.value = '';
     axios.get('/api/teacher-application/')
         .then(res => {
-            application.value = res.data
-            form.full_name = application.value.full_name || ''
-            form.phone = application.value.phone || ''
+            application.value = res.data;
+            form.full_name = application.value.full_name || '';
+            form.phone = application.value.phone || '';
         })
         .catch(err => {
             if (err.response && err.response.status === 404) {
-                application.value = null
-                message.value = 'Сіз әлі өтініш жіберген жоқсыз! Төмендегі форманы толтырыңыз.'
+                application.value = null;
+                message.value = 'Сіз әлі өтініш жіберген жоқсыз! Төмендегі форманы толтырыңыз.';
             } else {
-                error.value = err.response?.data?.detail || 'Ошибка при получении заявки'
+                error.value = err.response?.data?.detail || 'Ошибка при получении заявки';
             }
-        })
-}
+        });
+};
+
+
+const handleFileChange = () => {
+    const selectedFiles = fileInput.value?.files;
+    if (selectedFiles) {
+        files.value = [...files.value, ...Array.from(selectedFiles)];
+    }
+};
 
 const submitForm = () => {
-    error.value = ''
-    message.value = ''
-
-    const fd = new FormData()
-    fd.append('full_name', form.full_name)
-    fd.append('phone', form.phone)
-
-    const file = fileInput.value?.files[0]
-    if (!file) {
-        error.value = 'Өтініш, құжатты жүктеңіз!'
-        return
+    if (userStore.user.role !== 'teacher') {
+        message.value = 'Тек оқытушылар өтінім жіберуге құқылы.';
+        return;
     }
-    fd.append('document', file)
+    error.value = '';
+    message.value = '';
+
+    const fd = new FormData();
+    fd.append('full_name', form.full_name);
+    fd.append('phone', form.phone);
+
+    if (files.value.length === 0) {
+        error.value = 'Өтініш, кемінде бір құжатты жүктеңіз!';
+        return;
+    }
+
+    files.value.forEach((file, index) => {
+        fd.append(`documents`, file);
+    });
 
     axios.post('/api/teacher-application/', fd, {
         headers: {
-            'Content-Type': 'multipart/form-data'
-        }
+            'Content-Type': 'multipart/form-data',
+        },
     })
-        .then(res => {
-            application.value = res.data
-            message.value = 'Өтінім сәтті жіберілді және тексеруді күтуде.'
-            form.full_name = ''
-            form.phone = ''
-            fileInput.value.value = null
+        .then((res) => {
+            application.value = res.data;
+            message.value = 'Өтінім сәтті жіберілді және тексеруді күтуде.';
+            form.full_name = '';
+            form.phone = '';
+            files.value = [];
+            fileInput.value.value = null;
         })
-        .catch(err => {
-            error.value = err.response?.data?.detail || 'Ошибка при отправке заявки'
-        })
-}
+        .catch((err) => {
+            error.value = err.response?.data?.detail || 'Ошибка при отправке заявки';
+        });
+};
+
 
 const formatDate = (dateString) => {
     const options = {
@@ -253,7 +329,10 @@ onUnmounted(() => {
 })
 
 onMounted(() => {
-    getApplication()
+    if (userStore.user.role === 'teacher') {
+        getApplication()
+    }
+
 })
 </script>
 

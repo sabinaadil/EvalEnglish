@@ -5,16 +5,12 @@ from django.contrib.auth.forms import PasswordChangeForm
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework import status
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 from .models import User, TeacherApplication
 from .forms import SignUpForm, ProfileForm
 from .serializers import UserSerializer, TeacherApplicationSerializer
 from common.models import Document
-from common.serializers import DocumentSerializer
-
-# Импортируем Notification
 from notifications.models import Notification
 
 @api_view(['POST'])
@@ -25,9 +21,8 @@ def sign_up(request):
     form = SignUpForm(data)
     if form.is_valid():
         user = form.save(commit=False)
-        user.is_active = False  # wait for email confirmation
+        user.is_active = False  
 
-        # Check if user is applying to be a teacher
         is_teacher_applicant = form.cleaned_data.get('is_teacher_applicant', False)
         if is_teacher_applicant:
             user.role = 'teacher'
@@ -38,7 +33,6 @@ def sign_up(request):
 
         user.save()
 
-        # Send verification email
         user_id = str(user.id).replace('-', '')
         activation_url = f"{settings.WEBSITE_URL}/activateemail/?email={user.email}&id={user_id}"
         send_mail(
@@ -111,7 +105,7 @@ def teacher_application_view(request):
     if request.method == 'POST':
         full_name = request.data.get('full_name')
         phone = request.data.get('phone')
-        file = request.FILES.get('document')
+        files = request.FILES.getlist('documents') 
 
         application, created = TeacherApplication.objects.get_or_create(user=user)
         application.full_name = full_name or application.full_name
@@ -122,32 +116,30 @@ def teacher_application_view(request):
         application.rejection_reason = None  
         application.save()
 
-        # Если новая заявка => создаём уведомления для всех админов
         if created:
             admins = User.objects.filter(is_superuser=True)
             for admin in admins:
                 Notification.objects.create(
                     user=admin,
-                    notification_type='info',
+                    notification_type='reminder',
                     message=f"Новая заявка на преподавателя: {application.full_name} ({user.email})"
                 )
 
-        if file:
-            # Удаляем существующие документы перед добавлением нового
+        if files:
             existing_documents = Document.objects.filter(
                 content_type=ContentType.objects.get_for_model(TeacherApplication),
                 object_id=application.id
             )
             existing_documents.delete()
 
-            # Создаём новый Document, связанный с TeacherApplication
             teacher_app_ct = ContentType.objects.get_for_model(TeacherApplication)
-            document = Document.objects.create(
-                uploaded_by=user,
-                content_type=teacher_app_ct,
-                object_id=application.id,
-                file=file
-            )
+            for file in files:
+                Document.objects.create(
+                    uploaded_by=user,
+                    content_type=teacher_app_ct,
+                    object_id=application.id,
+                    file=file
+                )
 
         serializer = TeacherApplicationSerializer(application, context={'request': request})
         return Response(serializer.data, status=201)

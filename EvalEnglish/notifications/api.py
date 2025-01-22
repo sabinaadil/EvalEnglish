@@ -26,12 +26,10 @@ def mark_notification_read(request, notif_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def teacher_application_approve(request, application_id):
-    """
-    Пример подтверждения заявки. Только для админов (is_superuser).
-    """
+    """Пример подтверждения заявки. Только для админов (is_superuser)."""
     if not request.user.is_superuser:
         return Response({'detail': 'У вас нет прав одобрять заявки.'}, status=403)
-    
+
     application = get_object_or_404(TeacherApplication, id=application_id)
     application.status = 'approved'
     application.reviewed_at = application.reviewed_at or application.submitted_at
@@ -46,15 +44,21 @@ def teacher_application_approve(request, application_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def teacher_application_reject(request, application_id):
-    """
-    Пример отклонения заявки. Только для админов (is_superuser).
-    """
+    """Пример отклонения заявки. Только для админов (is_superuser)."""
     if not request.user.is_superuser:
         return Response({'detail': 'У вас нет прав отклонять заявки.'}, status=403)
-    
+
     application = get_object_or_404(TeacherApplication, id=application_id)
     application.status = 'rejected'
     application.reviewed_at = application.reviewed_at or application.submitted_at
     application.save()
 
     return Response({'detail': 'Заявка отклонена.'})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def unread_notifications_count(request):
+    """Возвращает количество непрочитанных уведомлений для текущего пользователя."""
+    count = Notification.objects.filter(user=request.user, is_read=False).count()
+    return Response({'count': count})

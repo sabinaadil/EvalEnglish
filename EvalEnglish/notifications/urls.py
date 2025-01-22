@@ -2,9 +2,8 @@ from django.urls import path
 from . import api
 
 urlpatterns = [
-    path('', api.notifications_list, name='notifications_list'),
+    path('notifications/', api.notifications_list, name='notifications_list'),
+    path('notifications/<uuid:notif_id>/read/', api.mark_notification_read, name='mark_notification_read'),
     path('<uuid:notif_id>/read/', api.mark_notification_read, name='mark_notification_read'),
-
-    path('approve/<uuid:application_id>/', api.teacher_application_approve, name='teacher_application_approve'),
-    path('reject/<uuid:application_id>/', api.teacher_application_reject, name='teacher_application_reject'),
+    path('notifications/unread_count/', api.unread_notifications_count, name='unread_notifications_count'),
 ]

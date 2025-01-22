@@ -13,7 +13,7 @@
                     class="w-24 h-24 object-cover rounded-full border border-gray-300" />
             </div>
             <p class="text-center">
-                <strong>ТАӘ:</strong> {{ user.first_name }} {{ user.last_name }}
+                <strong>Логин:</strong> {{ user.first_name }} {{ user.last_name }}
             </p>
             <p class="text-center">
                 <strong>Пошта:</strong> {{ user.email }}
@@ -52,21 +52,21 @@
             <form v-if="isEditFormVisible" @submit.prevent="submitForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Аты</label>
-                    <input type="text" v-model="form.first_name" required
+                    <input type="text" v-model="form.first_name"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
                         placeholder="Атыңызды енгізіңіз" />
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Тегі</label>
-                    <input type="text" v-model="form.last_name" required
+                    <input type="text" v-model="form.last_name"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
                         placeholder="Тегіңізді енгізіңіз" />
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Пошта</label>
-                    <input type="email" v-model="form.email" required
+                    <input type="email" v-model="form.email"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
                         placeholder="Поштаңызды енгізіңіз" />
                 </div>

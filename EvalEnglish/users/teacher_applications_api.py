@@ -48,12 +48,20 @@ def teacher_application_approve(request, application_id):
     application.status = 'approved'
     application.reviewed_at = timezone.now()
     application.save()
-
+    
+   
     user = application.user
     user.is_teacher = True
     user.save()
+    
+    Notification.objects.create(
+        user=application.user,
+        notification_type='warning',
+        message=f"Сіздің оқытушылық өтініміңіз мақұлданды."
+    )
 
-    return Response({'detail': 'Заявка одобрена'})
+
+    return Response({'detail': 'Өтінім мақұлданды'})
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
@@ -63,7 +71,7 @@ def teacher_application_reject(request, application_id):
     reason = request.data.get('reason', '').strip()
 
     if not reason:
-        return Response({'detail': 'Пожалуйста, укажите причину отклонения.'}, status=400)
+        return Response({'detail': 'Қабылдамау себебін көрсетіңіз.'}, status=400)
 
     application.status = 'rejected'
     application.reviewed_at = timezone.now()
@@ -72,8 +80,8 @@ def teacher_application_reject(request, application_id):
 
     Notification.objects.create(
         user=application.user,
-        notification_type='info',
-        message=f"Ваша заявка на преподавателя была отклонена. Причина: {reason}"
+        notification_type='warning',
+        message=f"Сіздің оқытушылық өтініміңіз қабылданбады. Себебі: {reason}"
     )
 
     return Response({'detail': 'Заявка отклонена'}, status=200)

@@ -26,26 +26,49 @@
         </div>
         <div v-else class="grid grid-cols-1 gap-6">
             <div v-for="app in paginatedApplications" :key="app.id"
-                class="p-6 border rounded-lg shadow-sm bg-gray-50 flex flex-col justify-between transition duration-300 hover:bg-gray-100">
+                class="p-6 border rounded-lg shadow-sm bg-white flex flex-col justify-between transition duration-300 hover:shadow-lg">
                 <div>
-                    <p class="font-semibold text-lg text-gray-700">{{ app.full_name || '—' }}</p>
+                    <p class="font-semibold text-lg text-gray-800">{{ app.full_name || '—' }}</p>
                     <p class="text-gray-600">Пошта: {{ app.user_email }}</p>
                     <p class="text-gray-600">Телефон: {{ app.phone || '—' }}</p>
                     <p class="text-gray-600">Жіберілген күн: {{ app.submitted_at ? formatDate(app.submitted_at) : '---'
                         }}</p>
                 </div>
                 <div class="mt-4">
-                    <span class="font-semibold text-gray-700">Құжат:</span>
-                    <ul class="list-disc list-inside mt-2">
-                        <li v-for="doc in app.documents" :key="doc.id" class="text-blue-600 hover:underline">
-                            <a :href="doc.file" target="_blank">{{ getFileName(doc.file) }}</a>
-                        </li>
-                    </ul>
-                </div>
 
+                    <span class="font-semibold text-gray-700">Құжаттар:</span>
+                    <div class="space-y-2 mt-2">
+                        <div v-for="doc in app.documents" :key="doc.id"
+                            class="flex items-center justify-between bg-gray-50 border border-gray-300 rounded-md p-2 shadow-sm">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 mr-3" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 3v5h5M10 12h4m-4 4h4" />
+                                </svg>
+                                <a :href="getModifiedURL(doc.file)" target="_blank"
+                                    class="text-sm text-gray-700 truncate w-52 hover:underline">
+                                    {{ getFileName(doc.file) }}
+                                </a>
+                            </div>
+                            <button type="button" class="text-green-600 hover:text-green-800 focus:outline-none">
+                                <a :href="getModifiedURL(doc.file)" target="_blank"><svg
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg></a>
+
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
                 <div class="mt-6 flex justify-end space-x-3">
                     <button
-                        class="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                        class="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
                         @click="approveApplication(app.id)">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -54,7 +77,7 @@
                         Мақұлдау
                     </button>
                     <button
-                        class="flex items-center px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        class="flex items-center px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                         @click="openRejectModal(app.id)">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -135,8 +158,11 @@
 
 <script setup>
 import axios from 'axios'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
+import { useNotificationStore } from '../stores/notification'
 
+
+const notificationStore = useNotificationStore()
 const applications = ref([])
 const error = ref('')
 
@@ -178,6 +204,7 @@ function fetchPendingApplications() {
     axios.get('/api/teacher-applications/pending_list/')
         .then(res => {
             applications.value = res.data
+            console.log('Заявки:', applications.value)
         })
         .catch(err => {
             error.value = err.response?.data?.detail || 'Ошибка при загрузке заявок'
@@ -188,6 +215,7 @@ function approveApplication(applicationId) {
     axios.post(`/api/teacher-applications/${applicationId}/approve/`)
         .then(() => {
             applications.value = applications.value.filter(a => a.id !== applicationId)
+            notificationStore.decrementPendingCount()
         })
         .catch(err => {
             error.value = err.response?.data?.detail || 'Ошибка при одобрении заявки'
@@ -204,6 +232,7 @@ function rejectApplication(applicationId) {
         .then(() => {
             applications.value = applications.value.filter(a => a.id !== applicationId)
             closeRejectModal()
+            notificationStore.decrementPendingCount()
         })
         .catch(err => {
             error.value = err.response?.data?.detail || 'Ошибка при отклонении заявки'
@@ -212,6 +241,11 @@ function rejectApplication(applicationId) {
 
 function getFileName(fileUrl) {
     return decodeURIComponent(fileUrl.split('/').pop())
+}
+
+function getModifiedURL(relativePath) {
+    const baseURL = 'http://localhost:8000';
+    return `${baseURL}${relativePath}`;
 }
 
 function formatDate(dateString) {
@@ -255,8 +289,6 @@ watch(searchTerm, () => {
     currentPage.value = 1
 })
 
-import { onUnmounted, watch } from 'vue'
-
 function handleKeydown(event) {
     if (event.key === 'Escape' && showRejectModal.value) {
         closeRejectModal()
@@ -271,6 +303,7 @@ onUnmounted(() => {
 
 onMounted(() => {
     fetchPendingApplications()
+
 })
 </script>
 

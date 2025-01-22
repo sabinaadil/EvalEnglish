@@ -72,6 +72,7 @@
 <script setup>
 import { useToastStore } from '../stores/toast';
 import { useUserStore } from '../stores/user'
+import { useNotificationStore } from '../stores/notification';
 import axios from 'axios'
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -79,6 +80,7 @@ import { useRouter } from 'vue-router'
 const userStore = useUserStore()
 const toastStore = useToastStore()
 const router = useRouter()
+const notificationStore = useNotificationStore();
 
 const form = reactive({
   email: '',
@@ -109,11 +111,13 @@ const submitForm = async () => {
       const userInfoResponse = await axios.get('/api/me/')
       userStore.setUserInfo(userInfoResponse.data)
 
-      if (userStore.user.role === 'teacher' && userStore.user.isTeacher === false) {
-        router.push({ name: 'teacher-application' })
-      } else {
-        router.push({ name: 'home' })
-      }
+      // if (userStore.user.role === 'teacher' && userStore.user.isTeacher === false) {
+      //   router.push({ name: 'teacher-application' })
+      // } else {
+      router.push({ name: 'home' })
+      notificationStore.fetchUnreadCount();
+      notificationStore.fetchPendingCount();
+      // }
 
     } catch (error) {
       console.log('error', error)
