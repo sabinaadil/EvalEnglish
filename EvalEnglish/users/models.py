@@ -38,6 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
         ('student', 'Student'),
         ('teacher', 'Teacher'),
+        ('admin', 'Admin'),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

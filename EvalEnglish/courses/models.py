@@ -32,8 +32,10 @@ class Module(models.Model):
         related_name='modules'
     )
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     order = models.PositiveIntegerField()
     created_at = models.DateTimeField(default=timezone.now)
+    due_date = models.DateTimeField(null=True)
 
     class Meta:
         verbose_name = "Module"
