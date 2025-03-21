@@ -17,7 +17,8 @@ media/
 staticfiles/
 **/migrations/*  # Исключаем файлы миграций
 !**/migrations/__init__.py  # Но оставляем файл __init__.py для работы Django
-
+*/migrations/*.py
+!*/migrations/__init__.py
 # Node.js (Vue.js)
 node_modules/
 dist/
