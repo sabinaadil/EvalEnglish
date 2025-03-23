@@ -8,7 +8,7 @@ from common.models import Document
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ('email', 'first_name', 'last_name', 'role', 'is_teacher', 'is_active', 'date_joined')
+    list_display = ('id', 'email', 'first_name', 'last_name', 'role', 'is_teacher', 'is_active', 'date_joined')
     list_filter = ('role', 'is_teacher', 'is_active', 'date_joined')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('-date_joined',)

@@ -3,7 +3,7 @@ from .models import Course, Module, Lesson, CourseParticipant
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'teacher', 'created_at', 'updated_at')
+    list_display = ('name', 'teacher','is_published', 'created_at', 'updated_at')
     list_filter = ('teacher', 'created_at')
     search_fields = ('name', 'teacher__email')
 
