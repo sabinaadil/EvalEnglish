@@ -265,3 +265,13 @@ class LeaveCourseAPIView(APIView):
 
         participant.delete()
         return Response({'message': 'Вы успешно отписались от курса'})
+
+
+class MyCoursesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        participations = CourseParticipant.objects.filter(participant=request.user)
+        courses = [p.course for p in participations]
+        serializer = CourseSerializer(courses, many=True)
+        return Response(serializer.data)

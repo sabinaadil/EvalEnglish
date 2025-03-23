@@ -90,7 +90,7 @@ class UserAnswer(models.Model):
     teacher_score = models.FloatField(blank=True, null=True)
     model_score = models.FloatField(blank=True, null=True)
     final_score = models.FloatField(blank=True, null=True)
-    score = models.PositiveIntegerField(default=0)
+    score = models.FloatField(default=0)
     submitted_at = models.DateTimeField(auto_now_add=True)
     is_late = models.BooleanField(default=False)
 
