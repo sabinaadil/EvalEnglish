@@ -247,3 +247,21 @@ class CourseParticipantsListAPIView(APIView):
         participants = CourseParticipant.objects.filter(course=course)
         serializer = CourseParticipantSerializer(participants, many=True)
         return Response(serializer.data)
+
+
+class LeaveCourseAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, course_id):
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({'error': 'Курс не найден'}, status=404)
+
+        try:
+            participant = CourseParticipant.objects.get(course=course, participant=request.user)
+        except CourseParticipant.DoesNotExist:
+            return Response({'error': 'Вы не зарегистрированы на этот курс'}, status=400)
+
+        participant.delete()
+        return Response({'message': 'Вы успешно отписались от курса'})
