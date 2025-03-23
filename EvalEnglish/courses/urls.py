@@ -1,7 +1,7 @@
 from django.urls import path
 from .api import (CourseAPIView, CoursesListAPIView, CourseSingleAPIView, ModuleAPIView, ModulesListAPIView,
                   ModuleSingleAPIView, LessonAPIView, LessonsListAPIView, LessonSingleAPIView, EnrollCourseAPIView,
-                  CourseParticipantsListAPIView)
+                  CourseParticipantsListAPIView, LeaveCourseAPIView)
 
 urlpatterns = [
     # course
@@ -22,4 +22,5 @@ urlpatterns = [
     # course_participants
     path('enroll/', EnrollCourseAPIView.as_view(), name='enroll-course'),
     path('course-participants/<uuid:course_id>/', CourseParticipantsListAPIView.as_view(), name='course-participants'),
+    path('course/<uuid:course_id>/leave/', LeaveCourseAPIView.as_view(), name='course-leave'),
 ]
