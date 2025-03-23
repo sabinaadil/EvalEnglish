@@ -6,8 +6,11 @@ import uuid
 import os
 
 def document_upload_path(instance, filename):
-    # Формируем путь для сохранения файла: documents/<model_name>/<email>/<filename>
-    model_name = instance.content_type.model
+    if instance.content_type_id:
+        ct = ContentType.objects.get_for_id(instance.content_type_id)
+        model_name = ct.model
+    else:
+        model_name = 'unknown'
     email_folder = instance.uploaded_by.email.replace('@', '_').replace('.', '_')
     return os.path.join('documents', model_name, email_folder, filename)
 

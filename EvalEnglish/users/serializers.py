@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.avatar:
             return request.build_absolute_uri(obj.avatar.url)
         else:
-            return request.build_absolute_uri('/media/avatars/default_avatar.jpeg')
+            return None
 
 class TeacherApplicationSerializer(serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)

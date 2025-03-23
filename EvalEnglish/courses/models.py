@@ -13,6 +13,7 @@ class Course(models.Model):
         on_delete=models.CASCADE,
         related_name='courses'
     )
+    is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -32,8 +33,10 @@ class Module(models.Model):
         related_name='modules'
     )
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     order = models.PositiveIntegerField()
     created_at = models.DateTimeField(default=timezone.now)
+    due_date = models.DateTimeField(null=True)
 
     class Meta:
         verbose_name = "Module"

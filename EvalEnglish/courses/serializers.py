@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from common.models import Document
 from .models import Course, Module, Lesson, CourseParticipant
 from users.serializers import UserSerializer
 
@@ -7,16 +8,22 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ('id', 'name', 'description', 'teacher', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'description', 'teacher', 'is_published', 'created_at', 'updated_at')
         read_only_fields = ('id', 'teacher', 'created_at', 'updated_at')
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
-        fields = ('id', 'course', 'title', 'order', 'created_at')
+        fields = ('id', 'course', 'title', 'description', 'order', 'created_at', 'due_date')
         read_only_fields = ('id', 'created_at')
 
 class LessonSerializer(serializers.ModelSerializer):
+    content_url = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Document.objects.all(),
+        required=False
+    )
+
     class Meta:
         model = Lesson
         fields = ('id', 'module', 'title', 'content', 'content_url', 'order', 'deadline', 'time_limit', 'created_at')
