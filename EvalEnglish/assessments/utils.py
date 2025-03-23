@@ -1,24 +1,17 @@
-from .models import UserAnswer
+def update_user_answer_after_review(user_answer):
+    teacher_score = user_answer.teacher_score
+    model_score = user_answer.model_score or None
 
-def evaluate_answer(user_answer):
-    question = user_answer.question
-    if question.question_type.name in ['quiz', 'boolean']:
-        if question.correct_answer.strip().lower() == user_answer.answer_text.strip().lower():
-            user_answer.is_correct = True
-            user_answer.score = question.max_score
-        else:
-            user_answer.is_correct = False
-            user_answer.score = 0
-        user_answer.save()
+    if teacher_score is not None and model_score is not None:
+        final_score = (teacher_score + model_score) / 2
+        user_answer.final_score = final_score
 
-def evaluate_free_text_answer(user_answer, model_score=None, teacher_score=None):
-    if model_score is not None:
-        user_answer.model_score = model_score
-    if teacher_score is not None:
-        user_answer.teacher_score = teacher_score
+        user_answer.score = round(user_answer.question.max_score * final_score)
 
-    if user_answer.model_score is not None and user_answer.teacher_score is not None:
-        user_answer.final_score = round(0.7 * teacher_score + 0.3 * model_score, 2)
-        user_answer.score = round(user_answer.final_score)
-        user_answer.is_correct = user_answer.final_score >= 50
+        user_answer.is_correct = final_score >= 0.5
+    elif model_score is None:
+        user_answer.final_score = teacher_score
+        user_answer.score = teacher_score
+        user_answer.is_correct = teacher_score >= 0.5
+
     user_answer.save()
