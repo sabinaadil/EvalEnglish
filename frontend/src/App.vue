@@ -32,28 +32,38 @@ onMounted(() => {
         <div class="flex items-center space-x-4">
           <!-- Если пользователь - преподаватель, показываем кнопку "Создать курс" -->
           <div v-if="userStore.user.isTeacher">
-            <RouterLink to="/teacher/courses" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-              Мои курсы
+            <RouterLink to="/teacher/courses" class=" text-gray-600 py-2 px-3 font-bold rounded">
+              Оқытушы кабинеті
+            </RouterLink>
+          </div>
+          <div>
+            <RouterLink to="/teacher/courses" class=" text-gray-600 py-2 px-3 font-bold rounded">
+              Менің оқуым
             </RouterLink>
           </div>
 
           <!-- Уведомления для авторизованного пользователя -->
-          <div v-if="userStore.user.isAuthenticated" class="relative text-sm font-bold">
-            <RouterLink :to="{ name: 'notifications' }" class="hover:text-blue-700 transition">
-              <!-- Иконка уведомлений -->
+          <div v-if="userStore.user.isAuthenticated" class="relative text-md font-bold">
+            <RouterLink :to="{ name: 'notifications' }" class="hover:text-blue-700 transition flex items-center gap-2">
+              <!-- Иконка -->
+              <span class="text-gray-600">Хабарламалар</span>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022
-                         c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022
+             c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
               </svg>
+
+              <!-- Текст -->
+
             </RouterLink>
+
             <!-- Счётчик уведомлений -->
             <span v-if="notificationStore.unreadCount > 0"
               class="absolute top-0 right-0 -mt-2 -mr-2 inline-block rounded-full bg-red-500 text-white text-xs px-2 leading-tight">
               {{ notificationStore.unreadCount }}
             </span>
           </div>
+
 
           <!-- Админ-уведомления -->
           <div v-if="userStore.user.isSuperuser" class="relative text-sm font-bold">

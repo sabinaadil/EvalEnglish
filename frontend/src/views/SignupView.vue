@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-green-100 p-4">
+  <div class="min-h-screen flex items-center justify-center bg-white p-4">
     <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
       <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Тіркелу</h2>
 

@@ -1,25 +1,26 @@
 <template>
     <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-        <h3 class="text-2xl font-bold text-blue-800 mb-6">Шаг 1: Создание курса</h3>
+        <h3 class="text-2xl font-bold text-blue-800 mb-6">1 қадам: Курсты ашу</h3>
         <div class="mb-6">
             <label class="block text-gray-700 font-medium mb-2" for="courseName">
-                Название курса
+                Курс атауы
             </label>
-            <input id="courseName" v-model="localData.name" type="text" placeholder="Введите название курса"
+            <input id="courseName" v-model="localData.name" type="text" placeholder="Курс атауын еңгізіңіз..."
                 class="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-blue-500 transition" />
         </div>
         <div class="mb-6">
             <label class="block text-gray-700 font-medium mb-2" for="courseDescription">
-                Описание курса
+                Курс сипаттамасы
             </label>
-            <textarea id="courseDescription" v-model="localData.description" placeholder="Опишите курс..."
+            <textarea id="courseDescription" v-model="localData.description"
+                placeholder="Курс сипаттамасын еңгізіңіз..."
                 class="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-blue-500 transition"
                 rows="5"></textarea>
         </div>
         <div class="flex justify-end">
             <button @click="$emit('next', localData)"
                 class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition">
-                Далее
+                Әрі қарай
             </button>
         </div>
     </div>
