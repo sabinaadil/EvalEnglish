@@ -1,8 +1,8 @@
 <template>
     <div class="max-w-4xl mx-auto">
-        <h3 class="text-2xl font-bold text-blue-800 mb-4">Шаг 3: Уроки и вопросы</h3>
+        <h3 class="text-2xl font-bold text-blue-800 mb-4">Қадам 3: Сабақтар мен сұрақтар</h3>
         <p class="mb-6 text-gray-700">
-            Текущий курс: <strong>{{ formData.name }}</strong>
+            Ағымдағы курс: <strong>{{ formData.name }}</strong>
         </p>
 
         <!-- Список модулей -->
@@ -18,59 +18,59 @@
                 <!-- Раздел уроков -->
                 <div class="mb-6">
                     <h5 class="text-lg font-semibold text-gray-700 mb-3">
-                        Уроки модуля
+                        Модуль сабақтары
                     </h5>
                     <div v-if="mod.lessons.length">
                         <div v-for="(lesson, lessonIndex) in mod.lessons" :key="lessonIndex"
                             class="mb-4 p-4 border rounded bg-gray-50">
                             <p class="text-sm font-medium mb-2">
-                                Урок #{{ lessonIndex + 1 }}
+                                Сабақ #{{ lessonIndex + 1 }}
                             </p>
                             <label class="block text-gray-700 text-sm font-medium mb-1">
-                                Название урока
+                                Сабақ атауы
                             </label>
-                            <input v-model="lesson.title" type="text" placeholder="Напр. 'Lesson 1: Basics'"
+                            <input v-model="lesson.title" type="text" placeholder="Мыс. 'Lesson 1: Basics'"
                                 class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition" />
                             <label class="block text-gray-700 text-sm font-medium mt-3 mb-1">
-                                Содержание урока
+                                Сабақ мазмұны
                             </label>
-                            <textarea v-model="lesson.content" placeholder="Текст урока..."
+                            <textarea v-model="lesson.content" placeholder="Сабақ мазмұны..."
                                 class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition"
                                 rows="3"></textarea>
                         </div>
                     </div>
                     <button @click="addLesson(modIndex)"
                         class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition text-sm">
-                        Добавить урок
+                        Сабақты тіркеу
                     </button>
                 </div>
 
                 <!-- Раздел вопросов -->
                 <div>
                     <h5 class="text-lg font-semibold text-gray-700 mb-3">
-                        Вопросы модуля (итоговая аттестация)
+                        Модуль сұрақтары (Қорытынды тестілеу)
                     </h5>
                     <div v-if="mod.questions.length">
                         <div v-for="(question, qIndex) in mod.questions" :key="qIndex"
                             class="mb-4 p-4 border rounded bg-gray-50">
                             <p class="text-sm font-medium mb-2">
-                                Вопрос #{{ qIndex + 1 }}
+                                Сұрақ #{{ qIndex + 1 }}
                             </p>
                             <!-- Текст вопроса -->
                             <label class="block text-gray-700 text-sm font-medium mb-1">
-                                Текст вопроса
+                                Сұрақ мәтіні
                             </label>
                             <input v-model="question.question_text" type="text"
-                                placeholder="Напр. 'What is the capital of France?'"
+                                placeholder="Мыс. 'What is the capital of France?'"
                                 class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
 
                             <!-- Выбор типа вопроса -->
                             <label class="block text-gray-700 text-sm font-medium mt-3 mb-1">
-                                Тип вопроса
+                                Сұрақ түрі
                             </label>
                             <select v-model="question.question_type"
                                 class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm">
-                                <option value="">-- Выберите тип --</option>
+                                <option value="">Сұрақ түрін таңдаңыз</option>
                                 <option v-for="type in questionTypes" :key="type.id" :value="type.id">
                                     {{ type.name }}
                                 </option>
@@ -80,21 +80,21 @@
                             <div class="grid grid-cols-3 gap-4 mt-3">
                                 <div>
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
-                                        Макс. балл
+                                        Максималды ұпай
                                     </label>
                                     <input v-model.number="question.max_score" type="number" placeholder="5"
                                         class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
                                 </div>
                                 <div>
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
-                                        Лимит времени (сек)
+                                        Уақыт шегі (сек)
                                     </label>
                                     <input v-model.number="question.time_limit" type="number" placeholder="60"
                                         class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
                                 </div>
                                 <div>
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
-                                        Макс. попыток
+                                        Максималды мүмкіндік
                                     </label>
                                     <input v-model.number="question.max_attempts" type="number" placeholder="3"
                                         class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
@@ -106,27 +106,27 @@
                                 <!-- Если тип text -->
                                 <div v-if="question.question_type === questionTypeIds.text">
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
-                                        Правильный ответ
+                                        Дұрыс жауап
                                     </label>
-                                    <input v-model="question.correct_answer" type="text" placeholder="Напр. 'Paris'"
+                                    <input v-model="question.correct_answer" type="text" placeholder="Мыс. 'Paris'"
                                         class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
                                 </div>
                                 <!-- Если тип boolean -->
                                 <div v-else-if="question.question_type === questionTypeIds.boolean">
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
-                                        Правильный ответ
+                                        Дүрыс жауап
                                     </label>
                                     <select v-model="question.correct_answer"
                                         class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm">
                                         <option value="">-- Выберите --</option>
-                                        <option value="true">Да</option>
-                                        <option value="false">Нет</option>
+                                        <option value="true">Иә</option>
+                                        <option value="false">Жоқ</option>
                                     </select>
                                 </div>
                                 <!-- Если тип file -->
                                 <div v-else-if="question.question_type === questionTypeIds.file">
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
-                                        Комментарий к файлу
+                                        Файл үшін сипаттама
                                     </label>
                                     <input v-model="question.correct_answer" type="text" placeholder="(необязательно)"
                                         class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
@@ -135,21 +135,22 @@
                                 <!-- Если тип quiz -->
                                 <div v-else-if="question.question_type === questionTypeIds.quiz">
                                     <p class="text-gray-700 text-sm font-medium mb-2">
-                                        Варианты ответов
+                                        Жауаптар варианттары
                                     </p>
                                     <div v-for="(option, optIndex) in question.answer_options" :key="optIndex"
                                         class="flex items-center mb-2 space-x-3">
-                                        <input v-model="option.answer_text" type="text" placeholder="Вариант ответа"
+                                        <input v-model="option.answer_text" type="text"
+                                            placeholder="Жауап вариантын еңгізіңіз..."
                                             class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
                                         <label class="flex items-center space-x-1">
                                             <input type="checkbox" v-model="option.is_correct"
                                                 class="form-checkbox text-blue-600" />
-                                            <span class="text-sm text-gray-700">Правильный?</span>
+                                            <span class="text-sm text-gray-700">Дұрыс?</span>
                                         </label>
                                     </div>
                                     <button @click="addQuizOption(modIndex, qIndex)"
                                         class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition">
-                                        Добавить вариант
+                                        Вариант қосу
                                     </button>
                                 </div>
                             </div>
@@ -158,25 +159,25 @@
                     <!-- Кнопка для добавления нового вопроса -->
                     <button @click="addQuestion(modIndex)"
                         class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm transition">
-                        Добавить вопрос
+                        Сұрақ қосу
                     </button>
                 </div>
             </div>
         </div>
 
         <div v-else class="text-gray-600 mb-4">
-            Нет модулей (или не загружены).
+            Модульдер жоқ немесе жүктелмеген!
         </div>
 
         <!-- Кнопки управления шагами -->
         <div class="flex justify-between mt-8">
             <button @click="$emit('back')"
                 class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-3 rounded-lg transition">
-                Назад
+                Артқа
             </button>
             <button @click="emitFinish"
                 class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-3 rounded-lg transition">
-                Завершить создание
+                Аяқтау
             </button>
         </div>
     </div>

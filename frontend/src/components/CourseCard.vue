@@ -2,7 +2,7 @@
     <div class="relative bg-white rounded shadow hover:shadow-lg transition duration-300">
         <!-- Изображение курса (заглушка) -->
         <div class="h-40 bg-gray-200 flex items-center justify-center">
-            <span class="text-gray-500 text-xs">Изображение курса</span>
+            <span class="text-gray-500 text-xs">Курс суреті</span>
         </div>
         <div class="p-4">
             <div class="flex justify-between items-start">
@@ -14,7 +14,7 @@
                         {{ course.description }}
                     </p>
                     <p class="text-xs text-gray-500 mt-2">
-                        Преподаватель: {{ course.teacher.first_name }} {{ course.teacher.last_name }}
+                        Оқытушы: {{ course.teacher.first_name }} {{ course.teacher.last_name }}
                     </p>
                 </div>
                 <!-- Отображаем меню опций только если showOptions=true -->
@@ -31,20 +31,20 @@
                             <li>
                                 <button @click="editCourse"
                                     class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Редактировать
+                                    Өңдеу
                                 </button>
 
                             </li>
                             <li>
                                 <button @click="deleteCourse"
                                     class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Удалить
+                                    Жою
                                 </button>
                             </li>
                             <li>
                                 <button @click="publishCourse"
                                     class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Опубликовать
+                                    Жариялау
                                 </button>
                             </li>
                         </ul>

@@ -2,14 +2,14 @@
     <div class="container mx-auto p-6">
         <!-- Если мастер НЕ запущен, показываем список курсов в виде карточек -->
         <div v-if="!wizardActive">
-            <h1 class="text-3xl font-bold mb-6">Мои курсы</h1>
+            <h1 class="text-3xl font-bold mb-6">Менің курстарым</h1>
             <button @click="startWizard"
                 class="bg-green-500 text-white px-5 py-2 rounded-lg shadow mb-8 hover:bg-green-600 transition">
-                Создать новый курс
+                Жаңа курс ашу
             </button>
 
             <div>
-                <h2 class="text-xl font-semibold mb-4">Ваши курсы</h2>
+                <h2 class="text-xl font-semibold mb-4">Сіздің ағымдағы курстар тізімі</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     <CourseCard v-for="course in courses" :key="course.id" :course="course" :showOptions="true" />
                 </div>

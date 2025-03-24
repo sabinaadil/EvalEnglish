@@ -1,12 +1,12 @@
 <template>
     <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6">Редактирование курса</h1>
+        <h1 class="text-3xl font-bold mb-6">Курсты өңдеу</h1>
         <div v-if="loading" class="text-center text-gray-600">
-            Загрузка данных курса...
+            Курсты жүктеу...
         </div>
         <div v-else class="mb-6 border rounded-lg p-6 shadow-lg bg-white">
             <div class="mb-4">
-                <h2 class="text-2xl font-semibold">Этап {{ currentStep }} из 3</h2>
+                <h2 class="text-2xl font-semibold">3 тен {{ currentStep }}-ші Қадам</h2>
             </div>
             <component :is="currentStepComponent" :form-data="formData" @update="updateFormData" @next="handleNext"
                 @back="handleBack" @finish="finishEditing" />
