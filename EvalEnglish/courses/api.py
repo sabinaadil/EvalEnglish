@@ -13,7 +13,7 @@ class IsTeacher:
 
 
 class CourseAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsTeacher]
+    permission_classes = [IsAuthenticated,]
 
     def post(self, request):
         serializer = CourseSerializer(data=request.data)
@@ -21,6 +21,14 @@ class CourseAPIView(APIView):
             serializer.save(teacher=request.user)
             return Response({'message': 'Курс создан', 'course': serializer.data}, status=201)
         return Response(serializer.errors, status=400)
+    
+    def get(self, request):
+        courses = Course.objects.filter(is_published=True)
+
+        paginator = PageNumberPagination()
+        paginated_courses = paginator.paginate_queryset(courses, request)
+        serializer = CourseSerializer(paginated_courses, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class CoursesListAPIView(APIView):

@@ -32,8 +32,8 @@ onMounted(() => {
         <div class="flex items-center space-x-4">
           <!-- Если пользователь - преподаватель, показываем кнопку "Создать курс" -->
           <div v-if="userStore.user.isTeacher">
-            <RouterLink to="/create-course" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-              Создать курс
+            <RouterLink to="/teacher/courses" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Мои курсы
             </RouterLink>
           </div>
 
