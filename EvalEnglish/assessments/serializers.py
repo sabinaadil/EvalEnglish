@@ -130,14 +130,51 @@ class UserAnswerCreateSerializer(serializers.ModelSerializer):
 
 
 class ModuleAssessmentSerializer(serializers.ModelSerializer):
+    score = serializers.SerializerMethodField()
+
     class Meta:
         model = ModuleAssessment
-        fields = ('id', 'module', 'score', 'max_score', 'completed_at')
+        fields = ('id', 'module', 'user', 'score', 'max_score', 'completed_at')
+
+    def get_score(self, obj):
+        user_answers = UserAnswer.objects.filter(user=obj.user, question__module=obj.module)
+        total_score = sum([ans.final_score or ans.score for ans in user_answers])
+
+        if total_score >= obj.max_score * 0.9 and not obj.completed_at:
+            obj.completed_at = timezone.now()
+            obj.score = total_score
+            obj.save()
+
+        return int(total_score)
+
 
 class CourseAssessmentSerializer(serializers.ModelSerializer):
-    module_assessments = ModuleAssessmentSerializer(many=True)
+    total_score = serializers.SerializerMethodField()
+    max_score = serializers.SerializerMethodField()
+    time_spent = serializers.SerializerMethodField()
+
 
     class Meta:
         model = CourseAssessment
-        fields = ('id', 'course', 'user', 'total_score', 'max_score', 'time_spent', 'completed_at', 'module_assessments')
-        read_only_fields = ('id', 'completed_at', 'total_score', 'max_score', 'time_spent')
+        fields = (
+            'id', 'course', 'user',
+            'total_score', 'max_score', 'time_spent',
+            'completed_at', 'module_assessments'
+        )
+
+    def get_total_score(self, obj):
+        return sum([a.score for a in obj.module_assessments.all()])
+
+    def get_max_score(self, obj):
+        return sum([a.max_score for a in obj.module_assessments.all()])
+
+    def get_time_spent(self, obj):
+        return sum([
+            sum([
+                ua.time_spent for ua in UserAnswer.objects.filter(
+                    user=obj.user,
+                    question__module=module_assessment.module
+                )
+            ])
+            for module_assessment in obj.module_assessments.all()
+        ])
