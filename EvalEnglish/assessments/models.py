@@ -116,7 +116,7 @@ class ModuleAssessment(models.Model):
     )
     score = models.PositiveIntegerField()
     max_score = models.PositiveIntegerField()
-    completed_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         verbose_name = "Module Assessment"
@@ -142,7 +142,7 @@ class CourseAssessment(models.Model):
     total_score = models.PositiveIntegerField(default=0)
     max_score = models.PositiveIntegerField(default=0)
     time_spent = models.PositiveIntegerField(default=0)
-    completed_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
     module_assessments = models.ManyToManyField(
         ModuleAssessment,
         related_name='course_assessments'

@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from courses.models import Module
+from courses.models import Module, Course
+from django.utils import timezone
 from .utils import update_user_answer_after_review
 from .models import QuestionType, Question, AnswerOption, UserAnswer, ModuleAssessment, CourseAssessment
 from .serializers import (QuestionTypeSerializer, QuestionSerializer, AnswerOptionSerializer, UserAnswerCreateSerializer,
@@ -206,3 +207,139 @@ class GradeUserAnswerAPIView(APIView):
 
         serializer = UserAnswerSerializer(answer)
         return Response({'message': 'Оценка сохранена', 'answer': serializer.data}, status=200)
+
+
+class ModuleAssessmentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, module_id):
+        user = request.user
+
+        # Проверка существования модуля
+        try:
+            module = Module.objects.get(id=module_id)
+        except Module.DoesNotExist:
+            return Response({'error': 'Модуль не найден'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Подсчёт всех баллов за ответы пользователя в этом модуле
+        user_answers = UserAnswer.objects.filter(user=user, question__module=module)
+        total_score = sum(answer.score for answer in user_answers)
+
+        # Подсчёт максимального возможного балла по всем вопросам модуля
+        questions = Question.objects.filter(module=module)
+        max_score = sum(question.max_score for question in questions)
+
+        # Получение или создание оценки
+        assessment, created = ModuleAssessment.objects.get_or_create(
+            module=module,
+            user=user,
+            defaults={
+                'score': total_score,
+                'max_score': max_score,
+            }
+        )
+
+        # Обновляем данные, если они изменились (на случай, если пользователь прошёл часть позже)
+        if not created:
+            assessment.score = total_score
+            assessment.max_score = max_score
+            assessment.save()
+
+        serializer = ModuleAssessmentSerializer(assessment)
+        return Response(serializer.data)
+
+
+class ModuleAssessmentCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ModuleAssessmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ModuleAssessmentListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        assessments = ModuleAssessment.objects.filter(user=request.user)
+        serializer = ModuleAssessmentSerializer(assessments, many=True)
+        return Response(serializer.data)
+
+
+class ModuleAssessmentSingleAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, assessment_id):
+        try:
+            assessment = ModuleAssessment.objects.get(id=assessment_id, user=request.user)
+        except ModuleAssessment.DoesNotExist:
+            return Response({'error': 'Оценка не найдена'}, status=404)
+
+        serializer = ModuleAssessmentSerializer(assessment)
+        return Response(serializer.data)
+
+class CourseAssessmentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, course_id):
+        user = request.user
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({'error': 'Курс не найден'}, status=status.HTTP_404_NOT_FOUND)
+
+        assessment, _ = CourseAssessment.objects.get_or_create(course=course, user=user)
+
+        modules = Module.objects.filter(course=course)
+        module_assessments = []
+
+        total_score = 0
+        max_total_score = 0
+        total_time_spent = 0
+
+        for module in modules:
+            # Получаем все вопросы модуля
+            questions = module.questions.all()
+            # Получаем все ответы пользователя на эти вопросы
+            user_answers = UserAnswer.objects.filter(user=user, question__in=questions)
+
+            # Подсчитываем сумму баллов и максимальную оценку
+            module_score = sum([ua.score for ua in user_answers])
+            module_max_score = sum([q.max_score for q in questions])
+            module_time_spent = sum([ua.time_spent for ua in user_answers])
+
+            total_score += module_score
+            max_total_score += module_max_score
+            total_time_spent += module_time_spent
+
+            # Получаем или создаём оценку за модуль
+            module_assessment, _ = ModuleAssessment.objects.get_or_create(
+                module=module,
+                user=user,
+                defaults={
+                    'score': module_score,
+                    'max_score': module_max_score
+                }
+            )
+
+            # Обновляем данные, если они изменились
+            if module_assessment.score != module_score or module_assessment.max_score != module_max_score:
+                module_assessment.score = module_score
+                module_assessment.max_score = module_max_score
+                module_assessment.save()
+
+            module_assessments.append(module_assessment)
+
+        # Обновляем CourseAssessment
+        assessment.total_score = total_score
+        assessment.max_score = max_total_score
+        assessment.time_spent = total_time_spent
+        assessment.save()
+        assessment.module_assessments.set(module_assessments)
+
+        serializer = CourseAssessmentSerializer(assessment)
+        return Response(serializer.data, status=status.HTTP_200_OK)

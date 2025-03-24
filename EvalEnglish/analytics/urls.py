@@ -1,4 +1,6 @@
 from django.urls import path
-from . import api
+from .api import ActivityMetricsAPIView
 
-urlpatterns = []
+urlpatterns = [
+    path('activity-metrics/', ActivityMetricsAPIView.as_view(), name='activity-metrics'),
+]
