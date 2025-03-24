@@ -193,7 +193,6 @@ class GradeUserAnswerAPIView(APIView):
         except UserAnswer.DoesNotExist:
             return Response({'error': 'Ответ не найден'}, status=404)
 
-        # Получаем и валидируем оценку преподавателя
         teacher_score = request.data.get('teacher_score')
         if teacher_score is None:
             return Response({'error': 'Оценка преподавателя обязательна'}, status=400)

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.utils import timezone
 from common.serializers import DocumentSerializer
 from notifications.models import Notification
+from .utils import evaluate_text_answer, extract_text_from_file
 from .models import QuestionType, Question, AnswerOption, UserAnswer, ModuleAssessment, CourseAssessment
 
 class QuestionTypeSerializer(serializers.ModelSerializer):
@@ -73,23 +74,40 @@ class UserAnswerCreateSerializer(serializers.ModelSerializer):
 
         question_type = question.question_type.name.lower()
 
+        is_correct = False
+        model_score = None
+        teacher_score = None
+        final_score = None
+        score = 0
+
         if question_type in ['boolean', 'quiz']:
             is_correct = (answer_text.strip().lower() == question.correct_answer.strip().lower())
             score = question.max_score if is_correct else 0
             final_score = score
-            teacher_score = None
-            model_score = None
-        else:
-            Notification.objects.create(
-                user=question.module.course.teacher,
-                notification_type='info',
-                message=f"Поступил ответ на вопрос: {question.question_text[:50]}"
-            )
-            is_correct = False
-            teacher_score = None
-            model_score = None
-            final_score = None
-            score = 0
+
+        elif question_type == 'text':
+            if answer_text.strip():
+                model_score = evaluate_text_answer(answer_text, question.correct_answer)
+            else:
+                Notification.objects.create(
+                    user=question.module.course.teacher,
+                    notification_type='info',
+                    message=f"Студент отправил текстовый ответ на вопрос: {question.question_text[:50]}"
+                )
+
+        elif question_type == 'file' and answer_files:
+            file_instance = answer_files[0]
+            file_path = file_instance.file.path
+            extracted_text = extract_text_from_file(file_path)
+
+            if extracted_text:
+                model_score = evaluate_text_answer(extracted_text, question.correct_answer)
+            else:
+                Notification.objects.create(
+                    user=question.module.course.teacher,
+                    notification_type='info',
+                    message=f"Файл ответа от студента требует проверки вручную: {question.question_text[:50]}"
+                )
 
         user_answer = UserAnswer.objects.create(
             user=user,
