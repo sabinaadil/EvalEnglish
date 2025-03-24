@@ -10,11 +10,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'first_name', 'last_name', 'email', 'avatar', 'role', 'is_teacher', 'is_superuser')
     
     def get_avatar(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if obj.avatar:
-            return request.build_absolute_uri(obj.avatar.url)
-        else:
-            return None
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
+
 
 class TeacherApplicationSerializer(serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)
