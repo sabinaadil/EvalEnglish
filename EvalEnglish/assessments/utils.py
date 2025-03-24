@@ -28,34 +28,26 @@ lemmatizer = WordNetLemmatizer()
 
 def get_wordnet_pos(tag):
     if tag.startswith('J'):
-        return 'a'  # adjective
+        return 'a'
     elif tag.startswith('V'):
-        return 'v'  # verb
+        return 'v'
     elif tag.startswith('N'):
-        return 'n'  # noun
+        return 'n'
     elif tag.startswith('R'):
-        return 'r'  # adverb
+        return 'r'
     else:
-        return 'n'  # default
+        return 'n'
 
 def preprocess_text(text):
     corrected = str(TextBlob(text).correct())
-
     tokens = word_tokenize(corrected.lower())
     tagged = pos_tag(tokens)
-
     lemmatized = [lemmatizer.lemmatize(word, get_wordnet_pos(pos)) for word, pos in tagged]
     return ' '.join(lemmatized)
 
 def evaluate_text_answer(student_answer: str, correct_answer: str) -> float:
-    """
-    Расширенная оценка текста студента по сравнению с правильным ответом.
-    Возвращает значение от 0.0 до 1.0 (схожесть).
-    """
-
     processed_student = preprocess_text(student_answer)
     processed_correct = preprocess_text(correct_answer)
-
     vectorizer = TfidfVectorizer().fit([processed_student, processed_correct])
     tfidf_matrix = vectorizer.transform([processed_student, processed_correct])
 
