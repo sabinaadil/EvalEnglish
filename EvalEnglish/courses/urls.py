@@ -1,13 +1,14 @@
 from django.urls import path
 from .api import (CourseAPIView, CoursesListAPIView, CourseSingleAPIView, ModuleAPIView, ModulesListAPIView,
                   ModuleSingleAPIView, LessonAPIView, LessonsListAPIView, LessonSingleAPIView, EnrollCourseAPIView,
-                  CourseParticipantsListAPIView, LeaveCourseAPIView, MyCoursesAPIView)
+                  CourseParticipantsListAPIView, LeaveCourseAPIView, MyCoursesAPIView, CourseDetailAPIView)
 
 urlpatterns = [
     # course
     path('course/', CourseAPIView.as_view(), name='course'),
     path('courses-list/', CoursesListAPIView.as_view(), name='course-list'),
     path('course/<uuid:course_id>/', CourseSingleAPIView.as_view(), name='course-single'),
+    path('course-detail/<uuid:course_id>/', CourseDetailAPIView.as_view(), name='course-detail'),
 
     # module
     path('module/', ModuleAPIView.as_view(), name='module'),
