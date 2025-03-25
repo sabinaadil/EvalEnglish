@@ -5,6 +5,7 @@ from rest_framework import status
 from .models import Course, Module, Lesson, CourseParticipant
 from .serializers import CourseSerializer, ModuleSerializer, LessonSerializer, CourseParticipantSerializer
 from rest_framework.pagination import PageNumberPagination
+from django.shortcuts import get_object_or_404
 
 
 class IsTeacher:
@@ -72,6 +73,36 @@ class CourseSingleAPIView(APIView):
             return course
         course.delete()
         return Response({'message': 'Курс удалён'})
+
+
+class CourseDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+
+        course_data = CourseSerializer(course).data
+        modules = Module.objects.filter(course=course)
+        modules_data = []
+
+        for module in modules:
+            module_data = ModuleSerializer(module).data
+            lessons = Lesson.objects.filter(module=module)
+            module_data['lessons'] = LessonSerializer(lessons, many=True).data
+            modules_data.append(module_data)
+
+        course_data['modules'] = modules_data
+        return Response(course_data)
+
+    def put(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+
+        serializer = CourseSerializer(course, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class ModuleAPIView(APIView):
