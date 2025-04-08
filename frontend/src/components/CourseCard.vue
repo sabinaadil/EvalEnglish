@@ -1,8 +1,8 @@
 <template>
     <div class="relative bg-white rounded shadow hover:shadow-lg transition duration-300">
-        <!-- Изображение курса (заглушка) -->
-        <div class="h-40 bg-gray-200 flex items-center justify-center">
-            <span class="text-gray-500 text-xs">Курс суреті</span>
+        <!-- Дефолтное изображение курса -->
+        <div class="h-40 flex items-center justify-center overflow-hidden rounded-t">
+            <img :src="defaultImage" alt="Дефолтное изображение курса" class="object-cover w-full h-full" />
         </div>
         <div class="p-4">
             <div class="flex justify-between items-start">
@@ -33,7 +33,6 @@
                                     class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Өңдеу
                                 </button>
-
                             </li>
                             <li>
                                 <button @click="deleteCourse"
@@ -56,7 +55,9 @@
 </template>
 
 <script>
-import axios from "axios";
+// Если изображение находится в public, можно задать путь как строку:
+// const defaultImage = '/image.png';
+// Если в папке assets, то импортируйте:
 export default {
     name: "CourseCard",
     props: {
@@ -72,6 +73,8 @@ export default {
     data() {
         return {
             menuOpen: false,
+            // Используем дефолтное изображение (путь относительно public)
+            defaultImage: '/image.png',
         };
     },
     methods: {
@@ -82,10 +85,9 @@ export default {
             this.menuOpen = false;
         },
         async editCourse() {
-            this.$router.push({ name: 'course-edit', params: { id: this.course.id } });
+            this.$router.push({ name: "course-edit", params: { id: this.course.id } });
             this.menuOpen = false;
         },
-
         async deleteCourse() {
             if (!confirm("Вы уверены, что хотите удалить курс?")) return;
             try {
