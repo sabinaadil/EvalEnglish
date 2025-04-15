@@ -4,7 +4,7 @@
             class="w-6 h-6 flex items-center justify-center rounded border cursor-pointer transition-colors duration-200 text-xs"
             :class="{
                 'bg-green-500 text-white border-green-500': step === currentStep,
-                'bg-green-500 text-white border-green-500': step !== currentStep
+                'bg-white text-gray-800 border-gray-300': step !== currentStep
             }">
             {{ step }}
         </button>
@@ -33,5 +33,5 @@ export default {
 </script>
 
 <style scoped>
-/* Қосымша стильдер қажет болса */
+/* Дополнительные стили, если необходимо */
 </style>

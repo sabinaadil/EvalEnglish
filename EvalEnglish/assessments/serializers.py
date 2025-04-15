@@ -10,13 +10,6 @@ class QuestionTypeSerializer(serializers.ModelSerializer):
         model = QuestionType
         fields = ('id', 'name', 'description')
 
-class QuestionSerializer(serializers.ModelSerializer):
-    question_file_url = DocumentSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Question
-        fields = ('id', 'module', 'question_text', 'question_type', 'question_file_url', 'time_limit', 'max_attempts', 'max_score', 'correct_answer', 'created_at')
-        read_only_fields = ('id', 'created_at')
 
 class AnswerOptionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,9 +18,44 @@ class AnswerOptionSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+class QuestionSerializer(serializers.ModelSerializer):
+    question_file_url = DocumentSerializer(many=True, read_only=True)
+    # Добавляем вложенное поле для вариантов ответа; required=False чтобы не было ошибки, если не передают
+    answer_options = AnswerOptionSerializer(many=True, required=False)
+
+    class Meta:
+        model = Question
+        fields = (
+            'id', 'module', 'question_text', 'question_type', 'question_file_url',
+            'time_limit', 'max_attempts', 'max_score', 'correct_answer', 'created_at',
+            'answer_options'
+        )
+        read_only_fields = ('id', 'created_at')
+
+    def create(self, validated_data):
+        answer_options_data = validated_data.pop('answer_options', [])
+        question = Question.objects.create(**validated_data)
+        for option_data in answer_options_data:
+            AnswerOption.objects.create(question=question, **option_data)
+        return question
+
+    def update(self, instance, validated_data):
+        answer_options_data = validated_data.pop('answer_options', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if answer_options_data is not None:
+            # Один из вариантов — удаляем старые и создаем новые варианты.
+            instance.answer_options.all().delete()
+            for option_data in answer_options_data:
+                AnswerOption.objects.create(question=instance, **option_data)
+        return instance
+
+
 class UserAnswerSerializer(serializers.ModelSerializer):
     answer_file_url = DocumentSerializer(many=True, read_only=True)
     user_email = serializers.EmailField(source='user.email', read_only=True)
+    question_type = serializers.CharField(source='question.question_type', read_only=True)
 
     class Meta:
         model = UserAnswer
@@ -36,10 +64,9 @@ class UserAnswerSerializer(serializers.ModelSerializer):
             'answer_text', 'answer_file_url',
             'attempt_number', 'time_spent',
             'is_correct', 'teacher_score', 'model_score', 'final_score', 'score',
-            'submitted_at', 'is_late'
+            'submitted_at', 'is_late', 'question_type',
         )
         read_only_fields = fields
-
 
 
 class UserAnswerCreateSerializer(serializers.ModelSerializer):
@@ -47,7 +74,7 @@ class UserAnswerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAnswer
-        fields = ('id', 'question', 'answer_text', 'answer_file_url', 'time_spent')
+        fields = ('id', 'question', 'answer_text', 'answer_file_url', 'time_spent', 'is_correct', 'model_score',)
 
     def validate(self, attrs):
         user = self.context['request'].user
@@ -81,9 +108,14 @@ class UserAnswerCreateSerializer(serializers.ModelSerializer):
         score = 0
 
         if question_type in ['boolean', 'quiz']:
-            is_correct = (answer_text.strip().lower() == question.correct_answer.strip().lower())
+            correct_options = AnswerOption.objects.filter(question=question, is_correct=True).values_list('answer_text',
+                                                                                                          flat=True)
+            is_correct = answer_text.strip().lower() in [opt.strip().lower() for opt in correct_options]
+
             score = question.max_score if is_correct else 0
             final_score = score
+            teacher_score = None
+            model_score = None
 
         elif question_type == 'text':
             if answer_text.strip():
@@ -137,7 +169,7 @@ class ModuleAssessmentSerializer(serializers.ModelSerializer):
         fields = ('id', 'module', 'user', 'score', 'max_score', 'completed_at')
 
     def get_score(self, obj):
-        user_answers = UserAnswer.objects.filter(user=obj.user, question__module=obj.module)
+        user_answers = obj.module.questions.all().first().user_answers.all()  # упрощенный пример; измените по необходимости
         total_score = sum([ans.final_score or ans.score for ans in user_answers])
 
         if total_score >= obj.max_score * 0.9 and not obj.completed_at:
@@ -152,7 +184,6 @@ class CourseAssessmentSerializer(serializers.ModelSerializer):
     total_score = serializers.SerializerMethodField()
     max_score = serializers.SerializerMethodField()
     time_spent = serializers.SerializerMethodField()
-
 
     class Meta:
         model = CourseAssessment
@@ -170,11 +201,9 @@ class CourseAssessmentSerializer(serializers.ModelSerializer):
 
     def get_time_spent(self, obj):
         return sum([
-            sum([
-                ua.time_spent for ua in UserAnswer.objects.filter(
-                    user=obj.user,
-                    question__module=module_assessment.module
-                )
-            ])
+            sum([ua.time_spent for ua in UserAnswer.objects.filter(
+                user=obj.user,
+                question__module=module_assessment.module
+            )])
             for module_assessment in obj.module_assessments.all()
         ])

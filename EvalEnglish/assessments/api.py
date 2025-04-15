@@ -1,10 +1,12 @@
 from uuid import UUID
+from users.models import User
 from courses.api import IsTeacher
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from courses.models import Module, Course
+from django.db.models import Q
 from django.utils import timezone
 from .utils import update_user_answer_after_review
 from .models import QuestionType, Question, AnswerOption, UserAnswer, ModuleAssessment, CourseAssessment
@@ -343,3 +345,43 @@ class CourseAssessmentAPIView(APIView):
 
         serializer = CourseAssessmentSerializer(assessment)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+class StudentAnswersReviewAPIView(APIView):
+    permission_classes = [IsAuthenticated]  
+
+    def get(self, request, student_id):
+        course_id = request.query_params.get("course")
+        if not course_id:
+            return Response({"error": "Параметр 'course' обязателен."}, status=400)
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({"error": "Курс не найден."}, status=404)
+
+        questions = Question.objects.filter(
+            module__course=course
+        ).filter(
+            Q(question_type__name__iexact="text") | Q(question_type__name__iexact="file")
+        ).distinct()
+
+        question_serializer = QuestionSerializer(questions, many=True)
+
+        last_answers = []
+        for q in questions:
+            last_answer = (
+                UserAnswer.objects.filter(user__id=student_id, question=q)
+                .order_by('-submitted_at')
+                .first()
+            )
+            if last_answer:
+                last_answers.append(last_answer)
+
+        answer_serializer = UserAnswerSerializer(last_answers, many=True)
+
+        return Response({
+            "questions": question_serializer.data,
+            "answers": answer_serializer.data
+        }, status=status.HTTP_200_OK)

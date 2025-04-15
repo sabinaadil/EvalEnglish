@@ -12,6 +12,11 @@ import CoursePlayView from "../views/CoursePlayView.vue";
 import MyCourses from "../views/Teacher/MyCourses.vue";
 import CourseEditView from "../views/Teacher/CourseEditView.vue";
 import AnalyticsView from "../views/AnalyticsView.vue";
+import TeacherCourseAssessments from "../views/Teacher/TeacherCourseAssessments.vue";
+import StudentAnswerReview from "../views/Teacher/StudentAnswerReview.vue";
+import TeacherCourseAnalytics from "../views/Teacher/TeacherCourseAnalytics.vue";
+import StudentAnalytics from "../views/StudentAnalytics.vue";
+import StudentMyCourses from "../views/StudentMyCourses.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,28 +66,62 @@ const router = createRouter({
       component: MyCourses,
     },
     {
-      path: "/courses/:id",
+      path: "/student/courses",
+      name: "student-courses",
+      component: StudentMyCourses,
+    },
+    {
+      // Для страницы деталей курса используем параметр courseId
+      path: "/course-detail/:courseId",
       name: "course-detail",
       component: CourseDetailView,
       props: true,
     },
     {
-      path: "/course-play/:id",
+      // Меняем путь на единообразное именование параметра (courseId)
+      path: "/course-play/:courseId",
       name: "CoursePlay",
       component: CoursePlayView,
-      props: (route) => ({ courseId: route.params.id }),
+      props: true,
     },
     {
-      path: "/course-edit/:id",
+      path: "/course/edit/:id",
       name: "course-edit",
       component: CourseEditView,
-      props: true,
+      props: true, // Это автоматически передаст параметр id как пропс в компонент
     },
     {
       path: "/analytics",
       name: "analytics",
       component: AnalyticsView,
       props: true,
+    },
+    {
+      path: "/teacher/course/:courseId/assessment",
+      name: "teacher-course-assessment",
+      component: TeacherCourseAssessments,
+      meta: { requiresAuth: true },
+      // Если требуется передавать роутер параметры как пропсы:
+      props: true,
+    },
+    {
+      path: "/teacher/course/:courseId/assessment/:studentId",
+      name: "student-answer-review",
+      component: StudentAnswerReview,
+      meta: { requiresAuth: true },
+      props: true,
+    },
+    {
+      path: "/teacher/courses/analytics",
+      name: "teacher-courses-analytics",
+      component: TeacherCourseAnalytics,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/student/courses/analytics",
+      name: "student-courses-analytics",
+      component: StudentAnalytics,
+      meta: { requiresAuth: true },
     },
   ],
 });

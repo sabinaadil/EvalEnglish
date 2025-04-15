@@ -1,7 +1,12 @@
+import math
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+
+from assessments.serializers import QuestionSerializer
+
+
 from .models import Course, Module, Lesson, CourseParticipant
 from .serializers import CourseSerializer, ModuleSerializer, LessonSerializer, CourseParticipantSerializer
 from rest_framework.pagination import PageNumberPagination
@@ -87,16 +92,25 @@ class CourseDetailAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, course_id):
+        # Получаем курс; если его нет — возвращается 404
         course = get_object_or_404(Course, id=course_id)
-
         course_data = CourseSerializer(course).data
-        modules = Module.objects.filter(course=course)
+
+        # Получаем модули курса (можно добавить сортировку по 'order', если такое поле имеется)
+        modules = Module.objects.filter(course=course).order_by('order')
         modules_data = []
 
         for module in modules:
             module_data = ModuleSerializer(module).data
-            lessons = Lesson.objects.filter(module=module)
+
+            # Получаем уроки модуля. Обратите внимание: в уроках больше вопросов уже не будет
+            lessons = Lesson.objects.filter(module=module).order_by('order')
             module_data['lessons'] = LessonSerializer(lessons, many=True).data
+
+            # Добавляем список вопросов для модуля
+            module_questions = module.questions.all().order_by('created_at')
+            module_data['questions'] = QuestionSerializer(module_questions, many=True).data
+
             modules_data.append(module_data)
 
         course_data['modules'] = modules_data
@@ -104,12 +118,12 @@ class CourseDetailAPIView(APIView):
 
     def put(self, request, course_id):
         course = get_object_or_404(Course, id=course_id)
-
         serializer = CourseSerializer(course, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=400)
+
 
 
 

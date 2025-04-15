@@ -30,6 +30,8 @@ class LessonSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'created_at')
 
 class CourseParticipantSerializer(serializers.ModelSerializer):
+    participant = UserSerializer(read_only=True)
+
     class Meta:
         model = CourseParticipant
         fields = ('id', 'course', 'participant', 'enrolled_at', 'progress')
