@@ -30,7 +30,7 @@ export default {
     props: {
         id: {
             type: String,
-            required: true,
+            default: null,  // если не передается как пропс, будем пытаться получить из $route.params
         },
     },
     data() {
@@ -38,7 +38,6 @@ export default {
             loading: true,
             currentStep: 1,
             formData: {
-                // Основные данные курса
                 name: "",
                 description: "",
                 courseId: null,
@@ -59,21 +58,29 @@ export default {
                     return "div";
             }
         },
+        courseId() {
+            // Попытка взять значение из пропса или параметров маршрута
+            const id = this.id || (this.$route && this.$route.params && this.$route.params.id);
+            console.log("Computed courseId:", id);
+            return id;
+        },
     },
     methods: {
         async fetchCourseData() {
+            const cid = this.courseId;
+            if (!cid) {
+                console.error("Course ID is undefined");
+                this.loading = false;
+                return;
+            }
             try {
-                const response = await axios.get(`/api/course/${this.id}/`);
+                const response = await axios.get(`/api/course/${cid}/`);
                 console.log("Response from API in fetchCourseData:", response.data);
-                // Если API возвращает { course: {...}, modules: [...] } – используем course,
-                // иначе предполагаем, что весь объект — это данные курса.
                 const courseData = response.data.course || response.data;
-                // Модули можно взять либо из response.data.modules, либо из courseData.modules (если есть)
                 const modulesData = response.data.modules || courseData.modules || [];
                 this.formData.courseId = courseData.id;
                 this.formData.name = courseData.name;
                 this.formData.description = courseData.description;
-                // Если уроки и вопросы отсутствуют, инициализируем их пустыми массивами
                 this.formData.modules = modulesData.map((mod) => ({
                     ...mod,
                     lessons: mod.lessons || [],
@@ -92,8 +99,7 @@ export default {
             this.updateFormData(updatedData);
             if (this.currentStep === 1) {
                 try {
-                    // Обновление основных данных курса
-                    const response = await axios.put(`/api/course/${this.id}/`, {
+                    const response = await axios.put(`/api/course/${this.courseId}/`, {
                         name: this.formData.name,
                         description: this.formData.description,
                     });
@@ -104,7 +110,6 @@ export default {
                 }
             } else if (this.currentStep === 2) {
                 try {
-                    // Для каждого модуля: если модуль уже существует – обновляем, иначе создаем
                     for (let i = 0; i < this.formData.modules.length; i++) {
                         const moduleData = this.formData.modules[i];
                         if (!moduleData.title) {
@@ -149,9 +154,7 @@ export default {
         async finishEditing(updatedData) {
             this.updateFormData(updatedData);
             try {
-                // Обновляем уроки и вопросы для каждого модуля
                 for (const mod of this.formData.modules) {
-                    // Уроки
                     if (mod.lessons && mod.lessons.length) {
                         for (const lesson of mod.lessons) {
                             if (!lesson.title) {
@@ -176,7 +179,6 @@ export default {
                             }
                         }
                     }
-                    // Вопросы
                     if (mod.questions && mod.questions.length) {
                         for (const question of mod.questions) {
                             if (!question.question_text) {
@@ -205,7 +207,6 @@ export default {
                                 });
                             }
                             console.log("Вопрос сохранен:", questionResp.data);
-                            // Если вопрос типа quiz, отправляем варианты ответа
                             if (question.answer_options && question.answer_options.length > 0) {
                                 const questionId = questionResp.data?.question?.id || questionResp.data?.id;
                                 if (!questionId) {

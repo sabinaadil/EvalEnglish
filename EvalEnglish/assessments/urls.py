@@ -1,6 +1,6 @@
 from django.urls import path
 from .api import (QuestionTypeListAPIView, QuestionAPIView, ModuleQuestionsListAPIView, QuestionSingleAPIView,
-                  AnswerOptionAPIView, QuestionAnswerOptionsAPIView, AnswerOptionSingleAPIView, UserAnswerCreateAPIView,
+                  AnswerOptionAPIView, QuestionAnswerOptionsAPIView, AnswerOptionSingleAPIView, StudentAnswersReviewAPIView, UserAnswerCreateAPIView,
                   QuestionUserAnswersAPIView, UserAnswerSingleAPIView, GradeUserAnswerAPIView, ModuleAssessmentAPIView,
                   ModuleAssessmentCreateAPIView, ModuleAssessmentListAPIView, ModuleAssessmentSingleAPIView,
                   CourseAssessmentAPIView)
@@ -23,6 +23,7 @@ urlpatterns = [
     path('question/<uuid:question_id>/my-answers/', QuestionUserAnswersAPIView.as_view(), name='my-question-answers'),
     path('answer/<uuid:answer_id>/', UserAnswerSingleAPIView.as_view(), name='answer-detail'),
     path('user-answers/<uuid:answer_id>/grade/', GradeUserAnswerAPIView.as_view(), name='grade-user-answer'),
+    path('student-answers/<uuid:student_id>/', StudentAnswersReviewAPIView.as_view(), name='student-answers-review'),
 
     # module assessment
     path('module/<uuid:module_id>/assessment/', ModuleAssessmentAPIView.as_view(), name='module-assessment'),

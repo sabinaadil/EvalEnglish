@@ -31,12 +31,11 @@
                             </label>
                             <input v-model="lesson.title" type="text" placeholder="Мыс. 'Lesson 1: Basics'"
                                 class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition" />
+
                             <label class="block text-gray-700 text-sm font-medium mt-3 mb-1">
                                 Сабақ мазмұны
                             </label>
-                            <textarea v-model="lesson.content" placeholder="Сабақ мазмұны..."
-                                class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition"
-                                rows="3"></textarea>
+                            <div :id="'vditor-' + modIndex + '-' + lessonIndex" class="vditor-container"></div>
                         </div>
                     </div>
                     <button @click="addLesson(modIndex)"
@@ -56,7 +55,6 @@
                             <p class="text-sm font-medium mb-2">
                                 Сұрақ #{{ qIndex + 1 }}
                             </p>
-                            <!-- Текст вопроса -->
                             <label class="block text-gray-700 text-sm font-medium mb-1">
                                 Сұрақ мәтіні
                             </label>
@@ -64,7 +62,6 @@
                                 placeholder="Мыс. 'What is the capital of France?'"
                                 class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
 
-                            <!-- Выбор типа вопроса -->
                             <label class="block text-gray-700 text-sm font-medium mt-3 mb-1">
                                 Сұрақ түрі
                             </label>
@@ -76,7 +73,6 @@
                                 </option>
                             </select>
 
-                            <!-- Параметры вопроса -->
                             <div class="grid grid-cols-3 gap-4 mt-3">
                                 <div>
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
@@ -101,9 +97,7 @@
                                 </div>
                             </div>
 
-                            <!-- Поле для правильного ответа / вариантов ответа -->
                             <div class="mt-4">
-                                <!-- Если тип text -->
                                 <div v-if="question.question_type === questionTypeIds.text">
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
                                         Дұрыс жауап
@@ -111,7 +105,7 @@
                                     <input v-model="question.correct_answer" type="text" placeholder="Мыс. 'Paris'"
                                         class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
                                 </div>
-                                <!-- Если тип boolean -->
+
                                 <div v-else-if="question.question_type === questionTypeIds.boolean">
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
                                         Дүрыс жауап
@@ -123,16 +117,15 @@
                                         <option value="false">Жоқ</option>
                                     </select>
                                 </div>
-                                <!-- Если тип file -->
+
                                 <div v-else-if="question.question_type === questionTypeIds.file">
                                     <label class="block text-gray-700 text-sm font-medium mb-1">
                                         Файл үшін сипаттама
                                     </label>
                                     <input v-model="question.correct_answer" type="text" placeholder="(необязательно)"
                                         class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500 transition text-sm" />
-                                    <!-- Здесь можно добавить кнопку для загрузки файла -->
                                 </div>
-                                <!-- Если тип quiz -->
+
                                 <div v-else-if="question.question_type === questionTypeIds.quiz">
                                     <p class="text-gray-700 text-sm font-medium mb-2">
                                         Жауаптар варианттары
@@ -156,7 +149,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Кнопка для добавления нового вопроса -->
                     <button @click="addQuestion(modIndex)"
                         class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm transition">
                         Сұрақ қосу
@@ -185,6 +177,8 @@
 
 <script>
 import axios from "axios";
+import Vditor from 'vditor';
+import 'vditor/dist/index.css';
 
 export default {
     name: "CreateCourseStep3",
@@ -199,23 +193,87 @@ export default {
             localModules: [],
             questionTypes: [],
             questionTypeIds: {},
+            vditorInstances: {},
         };
     },
     created() {
-        // Инициализируем модули из formData и дополняем их, если нужно
         this.localModules = this.formData.modules.map((m) => ({
             ...m,
-            lessons: m.lessons || [],
+            lessons: m.lessons?.map(lesson => ({
+                ...lesson,
+                content: lesson.content || ""
+            })) || [],
             questions: m.questions || [],
         }));
         this.fetchQuestionTypes();
     },
+    mounted() {
+        this.$nextTick(() => {
+            this.initAllEditors();
+        });
+    },
+    beforeUnmount() {
+        this.destroyAllEditors();
+    },
     methods: {
+        initAllEditors() {
+            this.localModules.forEach((mod, modIndex) => {
+                mod.lessons.forEach((lesson, lessonIndex) => {
+                    this.initVditor(modIndex, lessonIndex, lesson.content);
+                });
+            });
+        },
+
+        initVditor(modIndex, lessonIndex, initialContent) {
+            const containerId = `vditor-${modIndex}-${lessonIndex}`;
+            const instanceKey = `${modIndex}-${lessonIndex}`;
+
+            if (this.vditorInstances[instanceKey]) return;
+
+            this.vditorInstances[instanceKey] = new Vditor(containerId, {
+                height: 300,
+                value: initialContent,
+                cache: {
+                    enable: false
+                },
+                input: (value) => {
+                    this.localModules[modIndex].lessons[lessonIndex].content = value;
+                },
+                upload: {
+                    handler(files) {
+                        return new Promise((resolve) => {
+                            // Реализуйте загрузку файлов при необходимости
+                            console.log('Files to upload:', files);
+                            resolve(['/dummy/path/file.png']);
+                        });
+                    }
+                },
+                toolbar: [
+                    'emoji', 'headings', 'bold', 'italic', 'link',
+                    'upload', 'code', 'table', 'undo', 'redo'
+                ]
+            });
+        },
+
+        destroyEditor(modIndex, lessonIndex) {
+            const key = `${modIndex}-${lessonIndex}`;
+            if (this.vditorInstances[key]) {
+                this.vditorInstances[key].destroy();
+                delete this.vditorInstances[key];
+            }
+        },
+
+        destroyAllEditors() {
+            Object.keys(this.vditorInstances).forEach(key => {
+                this.vditorInstances[key].destroy();
+            });
+            this.vditorInstances = {};
+        },
+
         async fetchQuestionTypes() {
             try {
                 const response = await axios.get("/api/question-types/");
                 this.questionTypes = response.data;
-                // Формируем объект соответствия, например: { text: "uuid1", quiz: "uuid2", ... }
                 this.questionTypes.forEach((type) => {
                     this.questionTypeIds[type.name] = type.id;
                 });
@@ -223,16 +281,25 @@ export default {
                 console.error("Ошибка получения типов вопросов:", error);
             }
         },
+
         addLesson(modIndex) {
-            this.localModules[modIndex].lessons.push({
+            const newLesson = {
                 title: "",
                 content: "",
+            };
+
+            this.localModules[modIndex].lessons.push(newLesson);
+
+            this.$nextTick(() => {
+                const lessonIndex = this.localModules[modIndex].lessons.length - 1;
+                this.initVditor(modIndex, lessonIndex, "");
             });
         },
+
         addQuestion(modIndex) {
             this.localModules[modIndex].questions.push({
                 question_text: "",
-                question_type: "", // будет выбран из выпадающего списка (id)
+                question_type: "",
                 time_limit: 60,
                 max_attempts: 3,
                 max_score: 5,
@@ -240,6 +307,7 @@ export default {
                 answer_options: [],
             });
         },
+
         addQuizOption(modIndex, qIndex) {
             const question = this.localModules[modIndex].questions[qIndex];
             if (!question.answer_options) {
@@ -250,8 +318,8 @@ export default {
                 is_correct: false,
             });
         },
+
         emitFinish() {
-            // Передаём все данные наверх, чтобы родитель сделал POST-запросы
             this.$emit("finish", { modules: this.localModules });
         },
     },
@@ -259,13 +327,48 @@ export default {
         localModules: {
             handler(newVal) {
                 this.$emit("update", { modules: newVal });
+                this.$nextTick(this.initAllEditors);
             },
             deep: true,
-        },
-    },
+            immediate: true
+        }
+    }
 };
 </script>
 
 <style scoped>
-/* Дополнительные стили при необходимости */
+.vditor-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.vditor-toolbar {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 4px !important;
+}
+
+.vditor-reset {
+    padding: 12px !important;
+    min-height: 200px;
+    background-color: white;
+}
+
+.vditor-reset pre {
+    background-color: #f3f4f6 !important;
+    padding: 12px !important;
+    border-radius: 4px;
+}
+
+.vditor-reset table {
+    border-collapse: collapse;
+}
+
+.vditor-reset td,
+.vditor-reset th {
+    border: 1px solid #e5e7eb;
+    padding: 6px 12px;
+}
 </style>

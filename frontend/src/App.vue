@@ -32,12 +32,22 @@ onMounted(() => {
         <div class="flex items-center space-x-4">
           <!-- Если пользователь - преподаватель, показываем кнопку "Создать курс" -->
           <div v-if="userStore.user.isTeacher">
+            <RouterLink to="/teacher/courses/analytics" class=" text-gray-600 py-2 px-3 font-bold rounded">
+              Аналитика
+            </RouterLink>
+          </div>
+          <div v-if="!userStore.user.isTeacher && !userStore.user.isSuperuser">
+            <RouterLink to="/student/courses/analytics" class="text-gray-600 py-2 px-3 font-bold rounded">
+              Аналитика
+            </RouterLink>
+          </div>
+          <div v-if="userStore.user.isTeacher">
             <RouterLink to="/teacher/courses" class=" text-gray-600 py-2 px-3 font-bold rounded">
               Оқытушы кабинеті
             </RouterLink>
           </div>
           <div>
-            <RouterLink to="/teacher/courses" class=" text-gray-600 py-2 px-3 font-bold rounded">
+            <RouterLink to="/student/courses" class=" text-gray-600 py-2 px-3 font-bold rounded">
               Менің оқуым
             </RouterLink>
           </div>
